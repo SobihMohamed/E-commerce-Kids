@@ -13,7 +13,7 @@ namespace E_commerce.Domain.Models.Address
         public bool IsDefault { get; set; } 
 
         // Foreign Key
-        public Guid UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         // Navigation Property: Each address belongs to one user
         public ApplicationUser User { get; set; } = null!;

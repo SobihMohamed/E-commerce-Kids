@@ -15,7 +15,7 @@ namespace E_commerce.Domain.Models.Order
         public int ShippingAddressId { get; set; }
         public AddressEntity ShippingAddress { get; set; } = null!;
 
-        public Guid UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         public ApplicationUser User { get; set; } = null!;
 
         public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
