@@ -1,7 +1,4 @@
 ﻿using E_commerce.Domain.Models.Category;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace E_commerce.Domain.Models.Product
 {

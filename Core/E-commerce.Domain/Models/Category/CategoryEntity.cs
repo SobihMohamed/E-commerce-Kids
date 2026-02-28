@@ -1,4 +1,5 @@
-﻿using System;
+﻿using E_commerce.Domain.Models.Product;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
