@@ -11,4 +11,9 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\E-commerce.Persistence\E-commerce.Persistence.csproj" />
+    <ProjectReference Include="..\Infrastructure\E-commerce.Presentation\E-commerce.Presentation.csproj" />
+  </ItemGroup>
+
 </Project>
