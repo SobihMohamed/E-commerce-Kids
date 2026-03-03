@@ -1,4 +1,7 @@
 
+using E_commerce.Domain.Models.User;
+using Microsoft.AspNetCore.Identity;
+using E_commerce.Persistence.ProgramServices;
 namespace E_commerce.Web
 {
     public class Program
@@ -7,8 +10,12 @@ namespace E_commerce.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // get from presistence services 
+            builder.Services.AddPersistenceServices(builder.Configuration);
+            builder.Services.AddDataProtection();
+            builder.Services.AddIdentityCore<ApplicationUser>()
+                .AddDefaultTokenProviders();
             // Add services to the container.
-
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
