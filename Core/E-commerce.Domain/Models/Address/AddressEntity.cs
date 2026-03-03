@@ -16,6 +16,6 @@ namespace E_commerce.Domain.Models.Address
         public string UserId { get; set; } = string.Empty;
 
         // Navigation Property: Each address belongs to one user
-        public ApplicationUser User { get; set; } = null!;
+        public virtual ApplicationUser User { get; set; } = null!;
     }
 }

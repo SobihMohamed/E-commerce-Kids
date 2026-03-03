@@ -13,7 +13,7 @@ namespace E_commerce.Domain.Models.Notification
         public string? SenderId { get; set; }
         public ApplicationUser? Sender { get; set; }
 
-        public NotificationType NotificationType { get; set; }
+        public  NotificationType NotificationType { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public bool IsRead { get; set; } = false;

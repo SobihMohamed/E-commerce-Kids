@@ -10,6 +10,6 @@ namespace E_commerce.Domain.Models.Product
 
         // Foreign Key
         public int ProductId { get; set; }
-        public ProductEntity Product { get; set; } = null!;
+        public virtual ProductEntity Product { get; set; } = null!;
     }
 }

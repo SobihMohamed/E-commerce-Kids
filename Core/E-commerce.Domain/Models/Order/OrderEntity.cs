@@ -13,12 +13,12 @@ namespace E_commerce.Domain.Models.Order
         public decimal TotalAmount { get; set; } 
 
         public int ShippingAddressId { get; set; }
-        public AddressEntity ShippingAddress { get; set; } = null!;
+        public virtual AddressEntity ShippingAddress { get; set; } = null!;
 
         public string UserId { get; set; } = string.Empty;
-        public ApplicationUser User { get; set; } = null!;
+        public virtual ApplicationUser User { get; set; } = null!;
 
         public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
-        public List<OrderItemEntity> OrderItems { get; set; } = new List<OrderItemEntity>();
+        public virtual ICollection<OrderItemEntity> OrderItems { get; set; } = new HashSet<OrderItemEntity>();
     }
 }

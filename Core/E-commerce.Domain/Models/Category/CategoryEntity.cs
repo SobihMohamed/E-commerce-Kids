@@ -11,6 +11,6 @@ namespace E_commerce.Domain.Models.Category
         public string? Description { get; set; }
 
         // Navigation Property: One Category has many Products
-        public ICollection<ProductEntity> Products { get; set; } = new List<ProductEntity>();
+        public virtual ICollection<ProductEntity> Products { get; set; } = new List<ProductEntity>();
     }
 }

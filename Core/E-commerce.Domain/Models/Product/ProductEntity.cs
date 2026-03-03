@@ -1,4 +1,5 @@
 ﻿using E_commerce.Domain.Models.Category;
+using E_commerce.Domain.Models.CustomerInteraction;
 
 namespace E_commerce.Domain.Models.Product
 {
@@ -14,10 +15,11 @@ namespace E_commerce.Domain.Models.Product
 
         // Foreign Key
         public int CategoryId { get; set; }
-        public CategoryEntity Category { get; set; } = null!;
+        public virtual CategoryEntity Category { get; set; } = null!;
 
         // Navigation Properties
-        public ICollection<ProductImageEntity> Images { get; set; } = new List<ProductImageEntity>();
-        public ICollection<ProductVariantEntity> Variants { get; set; } = new List<ProductVariantEntity>();
+        public virtual ICollection<ProductImageEntity> Images { get; set; } = new List<ProductImageEntity>();
+        public virtual ICollection<ProductVariantEntity> Variants { get; set; } = new List<ProductVariantEntity>();
+        public virtual ICollection<ProductReviewEntity> Reviews { get; set; } = new List<ProductReviewEntity>();
     }
 }

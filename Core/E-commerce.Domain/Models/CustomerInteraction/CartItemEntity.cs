@@ -11,9 +11,9 @@ namespace E_commerce.Domain.Models.CustomerInteraction
         public int Quantity { get; set; }
 
         public Guid ShoppingCartId { get; set; }
-        public ShoppingCartEntity ShoppingCartEntity { get; set; } = null!;
+        public virtual ShoppingCartEntity ShoppingCart { get; set; } = null!;
 
         public int ProductVariantId { get; set; }
-        public ProductVariantEntity ProductVariant { get; set; } = null!;
+        public virtual ProductVariantEntity ProductVariant { get; set; } = null!;
     }
 }

@@ -10,7 +10,7 @@ namespace E_commerce.Domain.Models.CustomerInteraction
         public string? UserId { get; set; } // Foreign Key to ApplicationUser
         // optional because user can add to cart without being logged in,
         // but if they are logged in , we want to associate the cart with their account
-        public ApplicationUser? User { get; set; } = null!; // Navigation property
-        public List<CartItemEntity> Items { get; set; } = new List<CartItemEntity>();
+        public virtual ApplicationUser? User { get; set; } = null!; // Navigation property
+        public ICollection<CartItemEntity> CartItems { get; set; } = new HashSet<CartItemEntity>();
     }
 }
