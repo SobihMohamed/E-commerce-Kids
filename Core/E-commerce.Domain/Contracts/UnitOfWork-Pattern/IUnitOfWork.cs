@@ -1,9 +1,7 @@
 ﻿using E_commerce.Domain.Contracts.GenericRepos;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace E_commerce.Domain.Contracts.UoW
+
+namespace E_commerce.Domain.Contracts.UnitOfWork
 {
     // The IUnitOfWork interface defines a contract for a unit of work pattern,
     // which is a design pattern used to manage database transactions used when

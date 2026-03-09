@@ -1,5 +1,5 @@
 ﻿using E_commerce.Domain.Contracts.GenericRepos;
-using E_commerce.Domain.Contracts.UoW;
+using E_commerce.Domain.Contracts.UnitOfWork;
 using E_commerce.Persistence.E_commerceDbContext;
 using E_commerce.Persistence.ImplementsContracts.RepoImplementatoin;
 using System;
@@ -8,7 +8,7 @@ using System.Text;
 
 namespace E_commerce.Persistence.ImplementsContracts.UowImmlementation
 {
-    public class UnitOfWork(EcommerceDbContext _context) : IUnitOfWork 
+    public class UnitOfWork(EcommerceDbContext _context) : IUnitOfWork
     {
         private readonly Dictionary<string, object> _repositories = [];
         IGenericRepo<TEntity, TKey> IUnitOfWork.GetRepository<TEntity, TKey>()
