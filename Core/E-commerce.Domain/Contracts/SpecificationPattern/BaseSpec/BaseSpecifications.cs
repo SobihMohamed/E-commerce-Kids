@@ -11,7 +11,7 @@ namespace E_commerce.Domain.Contracts.Specifications.BaseSpec
     // but if we create this class and implement the ISpecifications interface in it and then inherit from this class in the specifications classes
     // abstract because we don't want to create an instance of this class directly we want to create an instance of the specifications classes that inherit from this class
     public abstract class BaseSpecifications<TEntity,TKey> 
-        : ISpecifications<TEntity, TKey> where TEntity : IEntity<TKey>
+        : ISpecifications<TEntity, TKey> where TEntity : class, IEntity<TKey>
     {
         // protected Empty constructor because if we need to create a specifications class
         // without criteria we can use this constructor and it will return all records
