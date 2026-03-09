@@ -1,6 +1,8 @@
 ﻿using E_commerce.Domain.Contracts;
 using E_commerce.Domain.Contracts.GenericReposPattern;
+using E_commerce.Domain.Contracts.SpecificationPattern;
 using E_commerce.Persistence.E_commerceDbContext;
+using E_commerce.Persistence.Evaluator;
 using Microsoft.EntityFrameworkCore;
 
 namespace E_commerce.Persistence.ImplementsContracts.RepoImplementatoin
@@ -26,6 +28,18 @@ namespace E_commerce.Persistence.ImplementsContracts.RepoImplementatoin
         public void Delete(TEntity entity)
             => _dbSet.Remove(entity);
 
+        public async Task<IReadOnlyList<TEntity>> GetAllWithSpecAsync(ISpecifications<TEntity, TKey> specifications)
+        {
+            var BaseQuery = _dbSet.AsNoTracking();
+            var Query = SpecificationEvaluator.GenerateQuery(BaseQuery, specifications);
+            return await Query.ToListAsync();
+        }
+        public async Task<TEntity?> GetByIdWithSpecAsync(ISpecifications<TEntity, TKey> specifications)
+        {
+            var BaseQuery = _dbSet.AsNoTracking();
+            var Query = SpecificationEvaluator.GenerateQuery(BaseQuery, specifications);
+            return await Query.FirstOrDefaultAsync();
 
+        }
     }
 }

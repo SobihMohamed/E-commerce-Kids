@@ -1,4 +1,5 @@
-﻿using System;
+﻿using E_commerce.Domain.Contracts.SpecificationPattern;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,6 +15,10 @@ namespace E_commerce.Domain.Contracts.GenericReposPattern
         // update and delete work with RAM not with database directly, so they can be synchronous
         Task<IReadOnlyList<TEntity>> GetAllAsync();
         Task<TEntity?> GetByIdAsync(TKey id); // ? because it may return null if the entity with the specified id does not exist
+
+        Task<IReadOnlyList<TEntity>> GetAllWithSpecAsync(ISpecifications<TEntity, TKey> specifications);
+        Task<TEntity?> GetByIdWithSpecAsync(ISpecifications<TEntity, TKey> specifications); // ? because it may return null if the entities with the specified ids do not exist
+
         Task AddAsync(TEntity entity); 
         void Update(TEntity entity);
         void Delete(TEntity entity);
