@@ -1,11 +1,7 @@
 ﻿using E_commerce.Domain.Contracts;
-using E_commerce.Domain.Contracts.GenericRepos;
+using E_commerce.Domain.Contracts.GenericReposPattern;
 using E_commerce.Persistence.E_commerceDbContext;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace E_commerce.Persistence.ImplementsContracts.RepoImplementatoin
 {

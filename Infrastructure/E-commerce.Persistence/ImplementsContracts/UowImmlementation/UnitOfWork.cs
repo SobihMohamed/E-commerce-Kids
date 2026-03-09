@@ -1,10 +1,7 @@
-﻿using E_commerce.Domain.Contracts.GenericRepos;
-using E_commerce.Domain.Contracts.UnitOfWork;
+﻿using E_commerce.Domain.Contracts.GenericReposPattern;
+using E_commerce.Domain.Contracts.UnitOfWorkPattern;
 using E_commerce.Persistence.E_commerceDbContext;
 using E_commerce.Persistence.ImplementsContracts.RepoImplementatoin;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace E_commerce.Persistence.ImplementsContracts.UowImmlementation
 {
@@ -15,7 +12,7 @@ namespace E_commerce.Persistence.ImplementsContracts.UowImmlementation
         {
             var type = typeof(TEntity).Name;
             if (_repositories.ContainsKey(type))
-                return (IGenericRepo<TEntity, TKey>) _repositories[type]; // cast the object to the correct type before returning it
+                return (IGenericRepo<TEntity, TKey>)_repositories[type]; // cast the object to the correct type before returning it
             var repositoryInstance = new GenericRepo<TEntity, TKey>(_context); // create a new instance of the repository
             _repositories[type] = repositoryInstance; // store the repository instance in the dictionary for future use
             return repositoryInstance; // return the newly created repository instance

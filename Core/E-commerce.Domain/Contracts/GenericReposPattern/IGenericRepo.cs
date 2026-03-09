@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace E_commerce.Domain.Contracts.GenericRepos
+namespace E_commerce.Domain.Contracts.GenericReposPattern
 {
     // The IGenericRepo interface defines a contract for a generic repository pattern,
     // it used to be an abstracted common repository that can be used for any entity type,

@@ -12,4 +12,8 @@
     <ProjectReference Include="..\E-commerce.Domain\E-commerce.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Specification\" />
+  </ItemGroup>
+
 </Project>

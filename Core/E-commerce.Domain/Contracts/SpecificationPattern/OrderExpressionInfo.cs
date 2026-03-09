@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace E_commerce.Domain.Contracts.Specification_Pattern
+namespace E_commerce.Domain.Contracts.SpecificationPattern
 {
     // enable multi-level ordering in the specifications
     // like Orderby x => x.Name ascending and then by x => x.Price descending
@@ -16,7 +16,7 @@ namespace E_commerce.Domain.Contracts.Specification_Pattern
         // IsDescending = false
         // it returns a list of OrderExpressionInfo in the specifications to order the results
         // like : Orderby x => x.Name ascending and then by x => x.Price descending  
-        public Expression<Func<TEntity,object>> OrderExpression { get; set; }
+        public Expression<Func<TEntity,object>>? OrderExpression { get; set; }
         public bool IsDescending { get; set; }
     }
 }

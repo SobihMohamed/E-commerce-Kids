@@ -1,0 +1,76 @@
+﻿using E_commerce.Domain.Contracts.SpecificationPattern;
+using System.Linq.Expressions;
+
+namespace E_commerce.Domain.Contracts.Specifications.BaseSpec
+{
+    // DRY Principle : this is the porpose of this class to avoid code duplication in the specifications classes
+    // example : if we not create this class we will have to implement the ISpecifications interface in each specifications class and we will have to implement
+    // the properties and methods in each specifications class which will cause code duplication
+    // and if we want to change the implementation of the properties and methods in the future
+    // we will have to change it in all specifications classes which will cause a lot of work and errors
+    // but if we create this class and implement the ISpecifications interface in it and then inherit from this class in the specifications classes
+    // abstract because we don't want to create an instance of this class directly we want to create an instance of the specifications classes that inherit from this class
+    public abstract class BaseSpecifications<TEntity,TKey> 
+        : ISpecifications<TEntity, TKey> where TEntity : IEntity<TKey>
+    {
+        // protected Empty constructor because if we need to create a specifications class
+        // without criteria we can use this constructor and it will return all records
+        // because the default criteria is Entity => true
+        // so if we need to get all  records with join and pagenation without ant where like getAllAsync
+        // we can use this constructor and then add the includes and order by and pagenation in the specifications class
+        protected BaseSpecifications()
+        {
+            // default criteria to return all records if no criteria
+            // is provided in the specifications classes
+            Criteria = Entity => true; 
+        }
+
+        #region Apply Criteria
+        // Criteria is the where clause in the specifications return true or false
+        // private set because we want to set it in the constructor and we don't want to change it later
+        public Expression<Func<TEntity, bool>> Criteria { get; private set; }
+        public BaseSpecifications(Expression<Func<TEntity, bool>> _criteria)
+          => Criteria = _criteria;
+        #endregion
+
+        #region Apply Includes
+        // Includes is the include clause in the specifications to include related entities return a list of expressions like x => x.Category
+        // initialize it with an empty list to avoid null reference exception when we want to add includes in the specifications classes
+        // private set because we want to set it in the constructor and we don't want to change it later
+        public List<Expression<Func<TEntity, object>>> Includes { get; private set; } = new List<Expression<Func<TEntity, object>>>();
+
+        // this method is used to add include expressions to the specifications classes
+        protected void AddInclude(Expression<Func<TEntity, object>> includeExpression )
+            => Includes.Add(includeExpression);
+        #endregion
+
+        #region Apply OrderBy
+        // OrderExpressionInfo is the order by clause in the specifications to order the results
+        // initialize it with an empty list to avoid null reference exception when we want to add order expressions in the specifications classes
+        // private set because we want to set it in the constructor and we don't want to change it later
+        public List<OrderExpressionInfo<TEntity>> OrderExpressionInfo { get; private set; } = new List<OrderExpressionInfo<TEntity>>();
+
+        // this method is used to add order expressions to the specifications classes
+        protected void AddOrderBy(Expression<Func<TEntity, object>> orderByExpression, bool isDescending = false)
+            => OrderExpressionInfo.Add(new OrderExpressionInfo<TEntity>
+            {
+                OrderExpression = orderByExpression,
+                IsDescending = isDescending
+            });
+        #endregion
+
+        #region Apply Pagenation
+        // pagenation properties
+        public int Take { get; private set; }
+        public int Skip { get; private set; }
+        public bool IsPagenationEnabled { get; private set; } = false;
+        // this method is used to apply pagenation to the specifications classes
+        protected void ApplyPagenation(int pageSize, int pageIndex)
+        {
+            Skip = (pageIndex - 1) * pageSize ;
+            Take = pageSize;
+            IsPagenationEnabled = true;
+        }
+        #endregion
+    }
+}
