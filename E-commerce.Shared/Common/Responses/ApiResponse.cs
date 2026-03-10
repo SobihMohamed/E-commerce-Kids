@@ -8,6 +8,8 @@
         public TData? Data { get; set; }
         public List<string>? Errors { get; set; } = new List<string>();
 
+        // Success response constructor
+        // no error list needed for success responses, so it's not included here
         public ApiResponse(TData data, string message, int statusCode = 200)
         {
             IsSuccess = true;
@@ -15,7 +17,9 @@
             Data = data;
             StatusCode = statusCode;
         }
-        public ApiResponse( string message, List<string> errors,  int statusCode = 400)
+        // Failure response constructor
+        // error list is optional for cases where you just want to return a message without specific errors
+        public ApiResponse( string message, int statusCode = 400 , List<string>? errors = null)
         {
             IsSuccess = false;
             Message = message;
