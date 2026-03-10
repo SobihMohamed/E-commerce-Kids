@@ -2,6 +2,7 @@
 using E_commerce.Domain.Models.User;
 using Microsoft.AspNetCore.Identity;
 using E_commerce.Persistence.ProgramServices;
+using E_commerce.Web.Middleware;
 namespace E_commerce.Web
 {
     public class Program
@@ -27,6 +28,8 @@ namespace E_commerce.Web
             {
                 app.MapOpenApi();
             }
+
+            app.UseMiddleware<GlobalErrorHandlerMiddleware>();
 
             app.UseHttpsRedirection();
 

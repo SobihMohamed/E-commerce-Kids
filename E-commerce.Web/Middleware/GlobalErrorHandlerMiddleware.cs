@@ -1,11 +1,16 @@
-﻿using E_commerce.Shared.Common.Responses;
+﻿using Azure;
+using E_commerce.Domain.Exceptions;
+using E_commerce.Shared.Common.Responses;
+using System;
 using System.Text.Json;
 
 namespace E_commerce.Web.Middleware
 {
     public class GlobalErrorHandlerMiddleware
-        // nextMw is the next middleware in the pipeline, logger is used for logging exceptions
-        (RequestDelegate nextMW , ILogger<GlobalErrorHandlerMiddleware> logger)
+        // nextMw is the next middleware in the pipeline, logger is used for logging exceptions.
+        // env is used to determine the current hosting environment (development, production, etc.)
+        // to provide more detailed error information in development mode.
+        (RequestDelegate nextMW , ILogger<GlobalErrorHandlerMiddleware> logger , IWebHostEnvironment env)
     {
         // The InvokeAsync method is called for each HTTP request.
         // It tries to execute the next middleware and checks for 404 status code.
@@ -40,6 +45,7 @@ namespace E_commerce.Web.Middleware
             context.Response.StatusCode = statusCode;
 
             var response = new ApiResponse<string>(msg,statusCode); // wrapper design pattern to ensure consistent response structure across the application, even for error responses. 
+            
             // convert from object ApiJson to json string to send it to the client,
             // and we use camelCase naming policy to ensure that the property names in the JSON response are in camelCase format,
             // which is a common convention in JavaScript and JSON data.
@@ -55,6 +61,32 @@ namespace E_commerce.Web.Middleware
 
         public async Task HandelExceptionAsync(HttpContext context, Exception ex)
         {
+            context.Response.ContentType = "application/json";
+            // used if server error exception only
+            string serverErrorMessage = env.IsDevelopment() ?
+                $"{ex.Message} \n {ex.StackTrace}" : "An unexpected error occurred. Please try again later.";
+
+            // we use pattern matching to determine the type of exception
+            // and create an appropriate ApiResponse based on the exception type.
+            var response = ex switch
+            {
+                NotFoundExceptionCustome => new ApiResponse<string>(ex.Message, 404),
+                UnauthorizedExceptionCusotme => new ApiResponse<string>(ex.Message, 401),
+                BadRequestExceptionCustome BR => new ApiResponse<string>(BR.Message, 400, BR._errors?.ToList()),
+                _ => new ApiResponse<string>(serverErrorMessage, 500)
+            };
+
+            context.Response.StatusCode = response.StatusCode;
+            response.IsSuccess = false;
+
+            var json = JsonSerializer.Serialize(
+                response,
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                }
+             );
+            await context.Response.WriteAsync(json);
         }
     }
 }
