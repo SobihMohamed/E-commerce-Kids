@@ -41,5 +41,13 @@ namespace E_commerce.Persistence.ImplementsContracts.RepoImplementatoin
             return await Query.FirstOrDefaultAsync();
 
         }
+        // this method is used to get the count of entities that match the specifications,
+        // it can be used for pagination to get the total count of items in the database that match the specifications
+        public async Task<int> GetCountAsync(ISpecifications<TEntity, TKey> specifications)
+        {
+            var BaseQuery = _dbSet.AsNoTracking();
+            var Query = SpecificationEvaluator.GenerateQuery(BaseQuery, specifications);
+            return await Query.CountAsync();
+        }
     }
 }
