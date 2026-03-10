@@ -1,6 +1,4 @@
-﻿
-
-namespace E_commerce.Shared.Responses
+﻿namespace E_commerce.Shared.Common.Responses
 {
     public class ApiResponse<TData>
     {
