@@ -12,7 +12,7 @@ namespace E_commerce.Persistence.ProgramServices
 {
     public static class AddDbServices
     {
-        public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection InjectDatabaseService(this IServiceCollection services, IConfiguration configuration)
         {
 
             // Add DbContext
@@ -27,7 +27,8 @@ namespace E_commerce.Persistence.ProgramServices
                 options.Password.RequiredLength = 6;
             })
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<EcommerceDbContext>();
+                .AddEntityFrameworkStores<EcommerceDbContext>()
+                .AddDefaultTokenProviders();
 
             return services;
         }
