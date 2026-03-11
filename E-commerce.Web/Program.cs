@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using E_commerce.Persistence.ProgramServices;
 using E_commerce.Web.Middleware;
 using E_commerce.Services.AutoMapper;
+using E_commerce.Web.Extensions;
 namespace E_commerce.Web
 {
     public class Program
@@ -12,8 +13,10 @@ namespace E_commerce.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // get from presistence layer 
+            // get from presistence layer (database configure) 
             builder.Services.InjectDatabaseService(builder.Configuration);
+            // get from identity layer in web project (Identity core configure)
+            builder.Services.InjectIdentityCore();
             // get from services layer
             builder.Services.InjectAutoMapperService();
             

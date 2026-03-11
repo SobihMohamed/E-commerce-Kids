@@ -18,17 +18,6 @@ namespace E_commerce.Persistence.ProgramServices
             // Add DbContext
             services.AddDbContext<EcommerceDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentityCore<ApplicationUser>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 6;
-            })
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<EcommerceDbContext>()
-                .AddDefaultTokenProviders();
 
             return services;
         }
