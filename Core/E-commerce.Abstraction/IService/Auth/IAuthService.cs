@@ -9,7 +9,6 @@ namespace E_commerce.Abstraction.IService.Auth
     {
         Task<AuthModelDto> LoginAsync (LoginDto loginDto);
         Task<AuthModelDto> RegisterAsync (RegisterDto registerDto);
-        protected Task<bool> CheckUserExistAsync (string email);
 
     }
 }
