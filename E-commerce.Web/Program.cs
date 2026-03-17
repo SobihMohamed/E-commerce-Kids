@@ -17,6 +17,8 @@ namespace E_commerce.Web
             builder.Services.InjectDatabaseService(builder.Configuration);
             // get from identity layer in web project (Identity core configure)
             builder.Services.InjectIdentityCore();
+            // inject all application services 
+            builder.Services.AddApplicationServices(builder.Configuration);
             // get from web layer (rate limiting configure)
             builder.Services.InjectRateLimiting();
             // get from services layer
