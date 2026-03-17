@@ -18,7 +18,7 @@ namespace E_commerce.Services.Services.AuthImplementation
         {
             // 1 - Check if the user already exists
             var user = await _userManager.FindByEmailAsync(registerDto.Email);
-            if (user == null)
+            if (user != null)
                 throw new BadRequestExceptionCustome("User with this email already exists.");
 
             // 2 - mapping the data from the DTO to the ApplicationUser model
@@ -168,6 +168,7 @@ namespace E_commerce.Services.Services.AuthImplementation
                 ExpireOn = tokenRespo.ExpireOn,
                 Email = user.Email!,
                 Name = user.FullName,
+                Roles = userRoles
             };
         }
     }
