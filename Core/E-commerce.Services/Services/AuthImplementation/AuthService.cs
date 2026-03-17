@@ -1,17 +1,19 @@
 ﻿using AutoMapper;
 using E_commerce.Abstraction.IService.Auth;
+using E_commerce.Abstraction.IService.Notification;
 using E_commerce.Abstraction.IService.Token;
 using E_commerce.Domain.Exceptions;
 using E_commerce.Domain.Models.User;
 using E_commerce.Shared.Dto_s.Auth.ForgetPssword;
 using E_commerce.Shared.Dto_s.Auth.Sign_In_Up;
+using E_commerce.Shared.Dto_s.Notificaiton;
 using E_commerce.Shared.Dto_s.Token;
 using E_commerce.Shared.EnumsHelper.User;
 using Microsoft.AspNetCore.Identity;
 
 namespace E_commerce.Services.Services.AuthImplementation
 {
-    public class AuthService(UserManager<ApplicationUser> _userManager, IMapper _mapper, ITokenService _tokenService)
+    public class AuthService(UserManager<ApplicationUser> _userManager,INotificationService _notificationService , IMapper _mapper, ITokenService _tokenService)
         : IAuthService
     {
         public async Task<AuthModelDto> RegisterAsync(RegisterDto registerDto)
@@ -102,7 +104,7 @@ namespace E_commerce.Services.Services.AuthImplementation
                 Roles = userRoles
             };
         }
-        public async Task<string> ForgetPasswordAsync(ForgetPasswordDto forgetPasswordDto)
+        public async Task ForgetPasswordAsync(ForgetPasswordDto forgetPasswordDto)
         {
             // 1 - Get the user from the database
             var user = await _userManager.FindByEmailAsync(forgetPasswordDto.Email);
@@ -116,8 +118,16 @@ namespace E_commerce.Services.Services.AuthImplementation
 
             // 3 - Send OTP to user's email (this is a placeholder, you should implement actual email sending logic)
             #region Email service 
+            // 3 - Send OTP 
+            var message = new MessageDto
+            {
+                To = user.Email!,
+                Subject = "Password Reset OTP",
+                Body = $"Your OTP code is: {otp}. It is valid for 2 min."
+            };
+
+            await _notificationService.SendNotificationAsync(message, NotificationType.Email);
             #endregion
-            return otp;
         }
         public async Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto)
         {

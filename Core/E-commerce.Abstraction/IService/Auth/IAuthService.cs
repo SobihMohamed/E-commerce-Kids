@@ -10,7 +10,7 @@ namespace E_commerce.Abstraction.IService.Auth
     {
         Task<AuthModelDto> LoginAsync (LoginDto loginDto);
         Task<AuthModelDto> RegisterAsync (RegisterDto registerDto);
-        Task<string> ForgetPasswordAsync (ForgetPasswordDto forgetPasswordDto); // return otp to reset password
+        Task ForgetPasswordAsync (ForgetPasswordDto forgetPasswordDto); // return otp to reset password
         Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto);
         Task<AuthModelDto> ResetPasswordAsync (ResetPasswordDto resetPasswordDto); // to still login after reset password
     }
