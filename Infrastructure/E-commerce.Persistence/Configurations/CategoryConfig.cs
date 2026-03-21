@@ -14,7 +14,11 @@ namespace E_commerce.Persistence.Configurations
             builder.ToTable("Categories");
             builder.HasKey(c => c.Id);
 
-            builder.Property(c => c.Name)
+            builder.Property(c => c.Title)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(c => c.PictureUrl)
                 .IsRequired()
                 .HasMaxLength(100);
 
