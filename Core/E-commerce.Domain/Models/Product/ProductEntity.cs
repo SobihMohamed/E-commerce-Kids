@@ -10,9 +10,6 @@ namespace E_commerce.Domain.Models.Product
         public string MainImageUrl { get; set; } = string.Empty;
         public decimal Price { get; set; }
 
-        // TargetAge
-        public string TargetAge { get; set; } = string.Empty;
-
         // Foreign Key
         public int CategoryId { get; set; }
         public virtual CategoryEntity Category { get; set; } = null!;

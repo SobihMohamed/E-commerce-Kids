@@ -26,11 +26,6 @@ namespace E_commerce.Shared.Common.Params
             set => _search = value?.Trim().ToLower();
         }
 
-        public string? _sort { get; set; }
-        public string? Sort
-        {
-            get => _sort;
-            set => _sort = value?.Trim().ToLower();
-        }
+        
     }
 }
