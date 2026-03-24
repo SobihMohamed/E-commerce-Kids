@@ -26,8 +26,8 @@ namespace E_commerce.Web
             
             // add identity core
             builder.Services.AddDataProtection();
-
             
+                   
             // Add services to the container.
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
