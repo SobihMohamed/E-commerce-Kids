@@ -15,7 +15,7 @@ namespace E_commerce.Shared.Dto_s.Product
         public string TargetAge { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
 
-        public List<string> ImageUrls { get; set; } = new();
+        public List<ProductImageDto> Images { get; set; } = new();
         public List<ProductVariantDto> Variants { get; set; } = new();
     }
 }
