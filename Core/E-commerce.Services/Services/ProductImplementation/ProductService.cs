@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using E_commerce.Abstraction.IService.Attachment;
 using E_commerce.Abstraction.IService.Product;
 using E_commerce.Domain.Contracts.UnitOfWorkPattern;
 using E_commerce.Domain.Exceptions;
@@ -13,7 +14,7 @@ using System.Text;
 
 namespace E_commerce.Services.Services.ProductImplementation
 {
-    public class ProductService(IUnitOfWork _unitOfWork, IMapper _mapper) : IProductService
+    public class ProductService(IUnitOfWork _unitOfWork, IMapper _mapper , IAttachmentService attachmentService) : IProductService
     {
         public async Task<PaginationResponse<ProductDto>> GetAllProductsAsync(ProductSpecParams specParams)
         {
@@ -53,7 +54,7 @@ namespace E_commerce.Services.Services.ProductImplementation
             //Mapping
             return _mapper.Map<ProductDetailsDto>(product);
         }
-        public Task<ProductDetailsDto> CreateProductAsync(ProductToCreateDto productDto)
+        public async Task<ProductDetailsDto> CreateProductAsync(ProductToCreateDto productDto)
         {
             // 1. get product repo 
             var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
@@ -61,11 +62,34 @@ namespace E_commerce.Services.Services.ProductImplementation
             // 2. map the incoming DTO to the ProductEntity
             var productEntity = _mapper.Map<ProductEntity>(productDto);
 
-            // 3. upload main image and additional images to cloud storage and get their URLs
-            if(productEntity.MainImageUrl != null)
-            {
+            // create a unique folder name for the product images using a GUID
+            string productFolderId = Guid.NewGuid().ToString();
 
+            // 3. add main image
+            string mainImagePath = Path.Combine("Products", productFolderId, "Main");
+            var fullMainImagePath = await attachmentService.UploadImageAsync(productDto.MainImageUrl,mainImagePath);
+            productEntity.MainImageUrl = fullMainImagePath;
+
+            // 4- add additional images if provided
+            string galleryImagePath = Path.Combine("Products", productFolderId, "Gallary");
+            if (productDto.ImageUrls!=null && productDto.ImageUrls.Count() > 0)
+            {
+                foreach (var image in productDto.ImageUrls)
+                {
+                    var realGalleryPath = await attachmentService.UploadImageAsync(image, galleryImagePath);
+                    productEntity.Images.Add(new ProductImageEntity { ImageUrl = realGalleryPath });
+                }
             }
+            // 5. add the product to the database
+            await productRepo.AddAsync(productEntity);
+            var result = await _unitOfWork.SaveChangesAsync();
+
+            if (result <= 0)
+                throw new BadRequestExceptionCustome("failed to add the product");
+
+            // 6. Return the full details DTO
+            return await GetProductDetailsByIdAsync(productEntity.Id);
+
         }
         public Task<ProductDetailsDto> UpdateProductAsync(int id, ProductToUpdateDto productDto)
         {

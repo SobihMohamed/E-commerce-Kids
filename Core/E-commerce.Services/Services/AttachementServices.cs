@@ -16,7 +16,7 @@ namespace E_commerce.Services.Services
             }
             // 1 - check allowed extentions
             var fileExtention = Path.GetExtension(formFile.FileName).ToLowerInvariant();
-            if (!AllowedExtentions.Contains(fileExtention) || fileExtention is null)
+            if (fileExtention is null || !AllowedExtentions.Contains(fileExtention))
                 throw new ArgumentException("File type is not allowed");
             // 2 - check file size
             var fileSize = formFile.Length;
