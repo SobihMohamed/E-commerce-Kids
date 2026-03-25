@@ -55,7 +55,17 @@ namespace E_commerce.Services.Services.ProductImplementation
         }
         public Task<ProductDetailsDto> CreateProductAsync(ProductToCreateDto productDto)
         {
-            throw new NotImplementedException();
+            // 1. get product repo 
+            var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
+
+            // 2. map the incoming DTO to the ProductEntity
+            var productEntity = _mapper.Map<ProductEntity>(productDto);
+
+            // 3. upload main image and additional images to cloud storage and get their URLs
+            if(productEntity.MainImageUrl != null)
+            {
+
+            }
         }
         public Task<ProductDetailsDto> UpdateProductAsync(int id, ProductToUpdateDto productDto)
         {
