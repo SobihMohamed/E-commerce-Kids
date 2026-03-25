@@ -23,6 +23,8 @@ namespace E_commerce.Shared.Dto_s.Product
 
         public int? CategoryId { get; set; }
 
+        public List<int>? DeletedImageIds { get; set; }
+
         public List<IFormFile>? ImageUrls { get; set; }
 
         public List<VariantToUpdateDto>? Variants { get; set; }
