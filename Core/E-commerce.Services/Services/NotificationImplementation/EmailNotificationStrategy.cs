@@ -15,7 +15,7 @@ namespace E_commerce.Services.Services.NotificationImplementation
         private readonly EmailSettings _emailSettings = emailSettings.Value;
         public NotificationType Type => NotificationType.Email;
 
-        public async Task SendAsync(MessageDto message)
+        public async Task DeliverAsync(MessageDto message)
         {
             // 1. prepare message
             var emailMessage = new MimeMessage();

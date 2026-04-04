@@ -12,7 +12,7 @@ namespace E_commerce.Services.Services.NotificationImplementation
         {
             var strategy = _notificationStrategies.FirstOrDefault(s => s.Type == type);
 
-            await strategy!.SendAsync(message);
+            await strategy!.DeliverAsync(message);
         }
     }
 }

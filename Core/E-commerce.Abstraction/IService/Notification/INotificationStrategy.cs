@@ -8,6 +8,6 @@ namespace E_commerce.Abstraction.IService.Notification
     public interface INotificationStrategy
     {
         NotificationType Type { get; }
-        Task SendAsync(MessageDto message);
+        Task DeliverAsync(MessageDto message);
     }
 }
