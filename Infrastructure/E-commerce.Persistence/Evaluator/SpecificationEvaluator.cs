@@ -18,6 +18,10 @@ namespace E_commerce.Persistence.Evaluator
             if (specification.Includes is not null && specification.Includes.Any())
                 query =specification.Includes.Aggregate(query, (current, Expression) => current.Include(Expression));
             
+            // after end the basic include we need to apply the then include
+            if (specification.IncludeStrings.Count > 0)
+                query = specification.IncludeStrings.Aggregate(query, (current, includeString) => current.Include(includeString));
+            
             if (specification.OrderExpressionInfo is not null && specification.OrderExpressionInfo.Any())
             {
                 // 1- Apply the first order by

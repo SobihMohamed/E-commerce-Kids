@@ -44,6 +44,42 @@ namespace E_commerce.Domain.Contracts.Specifications.BaseSpec
             => Includes.Add(includeExpression);
         #endregion
 
+        #region Example Why use IncludeStrings
+        /*
+            we need to use nested joins in the query 
+            => the normal is  : 
+            var cart = await _context.ShoppingCarts
+                         .Include(c => c.CartItems)
+                         .FirstOrDefaultAsync(c => c.Id == id);
+            Query : SELECT * FROM ShoppingCarts c
+                    LEFT JOIN CartItems i ON c.Id = i.ShoppingCartId
+                    WHERE c.Id = @id
+            => Ef core has an thenInclude so we need to implement this method here why ? 
+            var cart = await _context.ShoppingCarts
+                         .Include(c => c.CartItems)           // هات العناصر
+                            .ThenInclude(i => i.ProductVariant) // وبعدين من جوه العناصر هات المتغير
+                                .ThenInclude(v => v.Product)    // وبعدين من جوه المتغير هات المنتج
+                         .FirstOrDefaultAsync(c => c.Id == id);
+            Query : SELECT * FROM ShoppingCarts c
+                    LEFT JOIN CartItems i ON c.Id = i.ShoppingCartId
+                    LEFT JOIN ProductVariants v ON i.ProductVariantId = v.Id
+                    LEFT JOIN Products p ON v.ProductId = p.Id
+                    WHERE c.Id = @id
+
+            BUT THE normal include method will not work because it will only include the first level of related entities
+            and it will not include the nested related entities
+            
+            so EF Core provides =>  .Include("CartItems.ProductVariant.Product") you tell him 
+            get the cart and include the cart items and for each cart item include the product variant and for each product variant include the product
+            Ef convert it to => 
+            .Include(c => c.CartItems).ThenInclude(i => i.ProductVariant).ThenInclude(v => v.Product)
+         */
+        #endregion
+
+        #region Apply Nested Includes
+        public List<string> IncludeStrings { get; private set; } = new List<string>();
+
+        #endregion
         #region Apply OrderBy
         // OrderExpressionInfo is the order by clause in the specifications to order the results
         // initialize it with an empty list to avoid null reference exception when we want to add order expressions in the specifications classes
@@ -64,6 +100,8 @@ namespace E_commerce.Domain.Contracts.Specifications.BaseSpec
         public int Take { get; private set; }
         public int Skip { get; private set; }
         public bool IsPagenationEnabled { get; private set; } = false;
+
+
         // this method is used to apply pagenation to the specifications classes
         protected void ApplyPagenation(int pageSize, int pageIndex)
         {
