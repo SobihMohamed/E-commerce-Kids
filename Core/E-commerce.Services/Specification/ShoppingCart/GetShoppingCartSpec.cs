@@ -34,7 +34,6 @@ namespace E_commerce.Services.Specification.ShoppingCart
             IncludeStrings.Add(sizeInclude);
 
             // Order by 
-            AddOrderBy()
             // ==========================================
             // final query in EF-Core => 
             // _context.ShoppingCarts

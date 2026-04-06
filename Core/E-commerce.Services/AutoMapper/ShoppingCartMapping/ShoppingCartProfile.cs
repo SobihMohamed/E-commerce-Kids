@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using E_commerce.Domain.Models.CustomerInteraction;
 using E_commerce.Services.Resolver;
+using E_commerce.Shared.Dto_s.ShoppingCart.RequestDto;
 using E_commerce.Shared.Dto_s.ShoppingCart.ResponseDto;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,12 @@ namespace E_commerce.Services.AutoMapper.ShoppingCartMapping
             CreateMap<ShoppingCartEntity, ShoppingCartDto>()
                 .ForMember(dest => dest.CartItems,
                            opt => opt.MapFrom(src => src.CartItems.OrderByDescending(i => i.Id)));
+
+            CreateMap<AddToCartDto,CartItemEntity>()
+                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
+                .ForMember(dest => dest.ProductVariantId, opt => opt.MapFrom(src => src.ProductVariantId))
+                .ForMember(dest => dest.ShoppingCartId, opt => opt.MapFrom(src => src.ShoppingCartId ?? Guid.Empty));
+
 
             CreateMap<CartItemEntity, CartItemDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductVariant.Product.Name))
