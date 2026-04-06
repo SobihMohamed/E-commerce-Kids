@@ -79,7 +79,6 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             return await GetCartAsync(cartId);
         }
-
         public async Task<ShoppingCartDto> RemoveItemFromCartAsync(Guid shoppingCartId, int cartItemId)
         {
             // 1 - check existance 
@@ -101,18 +100,61 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             await _unitOfWork.SaveChangesAsync();
             return await GetCartAsync(shoppingCartId);
         }
-
-        public Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
+        public async Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
         {
-            throw new NotImplementedException();
+            var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+
+            // 1.get current User Cart
+            var currentGuestCartSpec = new GetShoppingCartSpec(guestCartId);
+            var currentGuestCart = await cartRepository.GetByIdWithSpecAsync(currentGuestCartSpec);
+
+            // 2. check if currentGuestCart is empty or not found
+            if (currentGuestCart == null || !currentGuestCart.CartItems.Any())
+            {
+                return await HandleEmptyGuestCartAsync(userId);
+            }
+
+            // 3. get the old cart if current is exist and has an items
+            var oldUserCartSpec = new GetShoppingCartByUserIdSpec(userId);
+            var oldUserCart = await cartRepository.GetByIdWithSpecAsync(oldUserCartSpec);
+
+            // 4. if has no old user cart
+            if (oldUserCart == null)
+            {
+                await AssignCartToUserAsync(currentGuestCart, userId);
+                return await GetCartAsync(currentGuestCart.Id);
+            }
+
+            // 5. if has old cart and current cart so merging them
+            MergeCartItemsWithStockValidation(currentGuestCart, oldUserCart, userId);
+
+            // 6. مسح القديمة وتحديث الجديدة
+            cartRepository.Delete(oldUserCart);
+            currentGuestCart.UserId = userId;
+            currentGuestCart.LastModifiedBy = userId;
+            cartRepository.Update(currentGuestCart);
+
+            var result = await _unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                throw new BadRequestExceptionCustome("Error during merging carts");
+
+            return await GetCartAsync(currentGuestCart.Id);
+        }
+        public async Task<bool> ClearCartAsync(Guid cartId)
+        {
+            var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+            var cart = await cartRepository.GetByIdAsync(cartId);
+
+            if (cart != null)
+            {
+                cartRepository.Delete(cart);
+                return await _unitOfWork.SaveChangesAsync() > 0;
+            }
+
+            return false;
         }
 
-        public Task<bool> ClearCartAsync(Guid cartId)
-        {
-            throw new NotImplementedException();
-        }
-
-        #region Private Helper Methods for
+        #region Helper in Add item to cart
         private async Task<ProductVariantEntity> ValidateProductStockAsync(int variantId, int requestedQuantity)
         {
             var productVariantRepository = _unitOfWork.GetRepository<ProductVariantEntity, int>();
@@ -186,5 +228,64 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
         }
         #endregion
 
+        #region Helper of Merging Methods
+        // merging the 2 carts
+        private void MergeCartItemsWithStockValidation(ShoppingCartEntity currentGuestCart, ShoppingCartEntity oldUserCart, string userId)
+        {
+            foreach (var oldUserCartItem in oldUserCart.CartItems)
+            {
+                var existingUserItem = currentGuestCart.CartItems.FirstOrDefault(o => o.ProductVariantId == oldUserCartItem.ProductVariantId);
+
+                if (existingUserItem != null)
+                {
+                    // total quantity
+                    var requestedTotal = existingUserItem.Quantity + oldUserCartItem.Quantity;
+
+                    // the maximum available quantity in DB
+                    var availableStock = oldUserCartItem.ProductVariant.StockQuantity;
+
+                    // to choice the requestedTotal if < availableStock and choice the availableStock if < requestedTotal
+                    existingUserItem.Quantity = Math.Min(requestedTotal, availableStock);
+                }
+                else
+                {
+                    // if not exist item
+                    currentGuestCart.CartItems.Add(new CartItemEntity
+                    {
+                        ProductVariantId = oldUserCartItem.ProductVariantId,
+                        Quantity = oldUserCartItem.Quantity,
+                        CreatedAt = DateTime.UtcNow,
+                        LastModifiedBy = userId,
+                        CreatedBy = userId
+                    });
+                }
+            }
+        }
+        // hande the empty current user cart
+        private async Task<ShoppingCartDto> HandleEmptyGuestCartAsync(string userId)
+        {
+            var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+
+            var fallbackSpec = new GetShoppingCartByUserIdSpec(userId);
+            var existingCart = await cartRepository.GetByIdWithSpecAsync(fallbackSpec);
+
+            if (existingCart != null)
+                return await GetCartAsync(existingCart.Id);
+
+            throw new ShoppingCartNotFoundException("No Cart Found");
+        }
+        // assign the cart to the user and return it
+        private async Task AssignCartToUserAsync(ShoppingCartEntity cart, string userId)
+        {
+            var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+
+            cart.UserId = userId;
+            cart.LastModifiedBy = userId;
+            cart.UpdatedAt = DateTime.UtcNow;
+
+            cartRepository.Update(cart);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        #endregion
     }
 }
