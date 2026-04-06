@@ -22,6 +22,7 @@ namespace E_commerce.Domain.Contracts.SpecificationPattern
             var cart = await _context.ShoppingCarts
                          .Include(c => c.CartItems)
                          .FirstOrDefaultAsync(c => c.Id == id);
+
             Query : SELECT * FROM ShoppingCarts c
                     LEFT JOIN CartItems i ON c.Id = i.ShoppingCartId
                     WHERE c.Id = @id
@@ -31,6 +32,7 @@ namespace E_commerce.Domain.Contracts.SpecificationPattern
                             .ThenInclude(i => i.ProductVariant) 
                                 .ThenInclude(v => v.Product)    
                          .FirstOrDefaultAsync(c => c.Id == id);
+
             Query : SELECT * FROM ShoppingCarts c
                     LEFT JOIN CartItems i ON c.Id = i.ShoppingCartId
                     LEFT JOIN ProductVariants v ON i.ProductVariantId = v.Id

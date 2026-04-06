@@ -1,10 +1,11 @@
 
 using E_commerce.Domain.Models.User;
-using Microsoft.AspNetCore.Identity;
 using E_commerce.Persistence.ProgramServices;
-using E_commerce.Web.Middleware;
 using E_commerce.Services.AutoMapper;
 using E_commerce.Web.Extensions;
+using E_commerce.Web.Middleware;
+using Microsoft.AspNetCore.Identity;
+using Scalar.AspNetCore;
 namespace E_commerce.Web
 {
     public class Program
@@ -39,15 +40,20 @@ namespace E_commerce.Web
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapScalarApiReference();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/openapi/v1.json", "E-Commerce API v1");
+                });
             }
 
             app.UseMiddleware<GlobalErrorHandlerMiddleware>();
-
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
-
+            app.UseStaticFiles();
             app.MapControllers();
 
             app.Run();

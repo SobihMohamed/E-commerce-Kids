@@ -16,12 +16,12 @@ namespace E_commerce.Services.AutoMapper.ProductMapping
                 .ForMember(dest => dest.ColorName, opt => opt.MapFrom(src => src.Color.Name))
                 .ForMember(dest => dest.StockQuantity, opt => opt.MapFrom(src => src.StockQuantity))
                 .ForMember(dest => dest.ColorHexCode, opt => opt.MapFrom(src => src.Color.HexCode));
-
+            
             // If we learn how to map collections of images,
             // we can use the same resolver for the product images as well.
             CreateMap<ProductImageEntity, ProductImageDto>()
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom<PictureUrlResolver<ProductImageEntity, ProductImageDto>, string>(src => src.ImageUrl));
-
+             
             CreateMap<ProductEntity, ProductDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Title))
                 .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom<PictureUrlResolver<ProductEntity, ProductDto>, string>(src => src.MainImageUrl))

@@ -1,5 +1,7 @@
 ﻿using E_commerce.Services.AutoMapper.AuthMapping;
 using E_commerce.Services.AutoMapper.CategroyMapping;
+using E_commerce.Services.AutoMapper.ProductMapping;
+using E_commerce.Services.AutoMapper.ShoppingCartMapping;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,8 @@ namespace E_commerce.Services.AutoMapper
             {
                 cfg.AddProfile(new AuthProfile());
                 cfg.AddProfile(new CategoryProfile());
+                cfg.AddProfile(new ProductProfile());
+                cfg.AddProfile(new ShoppingCartProfile());
             });
             return services;
         }

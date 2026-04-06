@@ -25,7 +25,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             // Fetch the cart from the database
             var cartEntity = await cartRepository.GetByIdWithSpecAsync(cartSpecification);
             // check if cart exists
-            if (cartEntity == null) throw new ShoppingCartNotFoundException();
+            if (cartEntity == null) throw new ShoppingCartNotFoundException("");
             // Map the cart entity to a DTO
             var cartDto = _mapper.Map<ShoppingCartDto>(cartEntity);
             // Return the cart DTO
@@ -80,12 +80,29 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             return await GetCartAsync(cartId);
         }
 
-        public Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
+        public async Task<ShoppingCartDto> RemoveItemFromCartAsync(Guid shoppingCartId, int cartItemId)
         {
-            throw new NotImplementedException();
+            // 1 - check existance 
+            var cartRepo = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+            var cartSpec = new GetShoppingCartSpec(shoppingCartId);
+            var cart = await cartRepo.GetByIdWithSpecAsync(cartSpec);
+
+            if (cart == null) throw new ShoppingCartNotFoundException("Shopping Cart Not Found");
+            
+            // 2 - find the item in the cart
+            var item = cart.CartItems.FirstOrDefault(c => c.Id == cartItemId);
+            if (item == null) throw new CartItemNotFound($"Cart Item Not Found");
+
+            // 3 - delete
+            cart.CartItems.Remove(item);
+            cart.UpdatedAt = DateTime.UtcNow;
+            cart.LastModifiedBy = cart.UserId;
+
+            await _unitOfWork.SaveChangesAsync();
+            return await GetCartAsync(shoppingCartId);
         }
 
-        public Task<ShoppingCartDto> RemoveItemFromCartAsync(Guid cartId, int cartItemId)
+        public Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
         {
             throw new NotImplementedException();
         }
