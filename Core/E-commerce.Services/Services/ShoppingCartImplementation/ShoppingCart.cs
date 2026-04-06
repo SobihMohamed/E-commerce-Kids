@@ -52,7 +52,50 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             return await GetCartAsync(targetCartId);
         }
-        #region Private Helper Methods for AddItemToCartAsync
+        public async Task<ShoppingCartDto> UpdateItemQuantityAsync(Guid cartId, int cartItemId, UpdateCartItemQuantityDto dto)
+        {
+            var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+            var cartSpec = new GetShoppingCartSpec(cartId);
+            var cart = await cartRepository.GetByIdWithSpecAsync(cartSpec); 
+
+            if (cart == null)
+                throw new ShoppingCartNotFoundException("Cart Not Found");
+
+            var cartItem = cart.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
+
+            if (cartItem == null)
+                throw new NotFoundExceptionCustome("Cart Item Not Found");
+
+            if (dto.Quantity <= 0)
+                throw new BadRequestExceptionCustome("Quantity must be greater than zero");
+
+            await ValidateProductStockAsync(cartItem.ProductVariantId, dto.Quantity);
+
+            cartItem.Quantity = dto.Quantity;
+            cart.UpdatedAt = DateTime.UtcNow;
+            cart.LastModifiedBy = cart.UserId;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return await GetCartAsync(cartId);
+        }
+
+        public Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ShoppingCartDto> RemoveItemFromCartAsync(Guid cartId, int cartItemId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> ClearCartAsync(Guid cartId)
+        {
+            throw new NotImplementedException();
+        }
+
+        #region Private Helper Methods for
         private async Task<ProductVariantEntity> ValidateProductStockAsync(int variantId, int requestedQuantity)
         {
             var productVariantRepository = _unitOfWork.GetRepository<ProductVariantEntity, int>();
@@ -126,25 +169,5 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
         }
         #endregion
 
-        public Task<bool> ClearCartAsync(Guid cartId)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ShoppingCartDto> RemoveItemFromCartAsync(Guid cartId, int cartItemId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ShoppingCartDto> UpdateItemQuantityAsync(Guid cartId, int cartItemId, UpdateCartItemQuantityDto dto)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
