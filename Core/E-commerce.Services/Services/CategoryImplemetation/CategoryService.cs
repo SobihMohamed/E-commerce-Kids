@@ -48,17 +48,17 @@ namespace E_commerce.Services.Services.CategoryImplemetation
             
             if (category == null)
                 throw new CategoryNotFoundException();
-            
-            var mappedCategory = _mapper.Map<CategoryEntity>(categoryDto);
-            
-            categoryRepo.Update(mappedCategory);
+
+            _mapper.Map(categoryDto, category);
+
+            categoryRepo.Update(category);
 
             var result = await _unitOfWork.SaveChangesAsync();
             
             if (result <= 0)
                 throw new BadRequestExceptionCustome("Failed to update category");
 
-            return _mapper.Map<CategoryDto>(mappedCategory);
+            return _mapper.Map<CategoryDto>(category);
 
         }
         public async Task<bool> DeleteCategoryAsync(int id)
