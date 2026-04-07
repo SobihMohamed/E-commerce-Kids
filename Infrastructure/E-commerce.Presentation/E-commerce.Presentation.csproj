@@ -11,4 +11,8 @@
     <ProjectReference Include="..\..\Core\E-commerce.Abstraction\E-commerce.Abstraction.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Auth\" />
+  </ItemGroup>
+
 </Project>
