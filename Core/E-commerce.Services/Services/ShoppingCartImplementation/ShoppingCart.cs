@@ -25,12 +25,13 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             // Fetch the cart from the database
             var cartEntity = await cartRepository.GetByIdWithSpecAsync(cartSpecification);
             // check if cart exists
-            if (cartEntity == null) throw new ShoppingCartNotFoundException("");
+            if (cartEntity == null) throw new ShoppingCartNotFoundException("Cart Not Found");
             // Map the cart entity to a DTO
             var cartDto = _mapper.Map<ShoppingCartDto>(cartEntity);
             // Return the cart DTO
             return cartDto;
         }
+    
         public async Task<ShoppingCartDto> AddItemToCartAsync(AddToCartDto dto, string? userId = null)
         {
             var variant = await ValidateProductStockAsync(dto.ProductVariantId, dto.Quantity);
@@ -52,6 +53,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             return await GetCartAsync(targetCartId);
         }
+        
         public async Task<ShoppingCartDto> UpdateItemQuantityAsync(Guid cartId, int cartItemId, UpdateCartItemQuantityDto dto)
         {
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
@@ -79,6 +81,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             return await GetCartAsync(cartId);
         }
+      
         public async Task<ShoppingCartDto> RemoveItemFromCartAsync(Guid shoppingCartId, int cartItemId)
         {
             // 1 - check existance 
@@ -100,6 +103,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             await _unitOfWork.SaveChangesAsync();
             return await GetCartAsync(shoppingCartId);
         }
+       
         public async Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
         {
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
@@ -140,6 +144,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             return await GetCartAsync(currentGuestCart.Id);
         }
+       
         public async Task<bool> ClearCartAsync(Guid cartId)
         {
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
@@ -228,7 +233,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
         }
         #endregion
 
-        #region Helper of Merging Methods
+        #region Helper in Merging cart
         // merging the 2 carts
         private void MergeCartItemsWithStockValidation(ShoppingCartEntity currentGuestCart, ShoppingCartEntity oldUserCart, string userId)
         {
@@ -260,7 +265,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                     });
                 }
             }
-        }
+        }    
         // hande the empty current user cart
         private async Task<ShoppingCartDto> HandleEmptyGuestCartAsync(string userId)
         {
