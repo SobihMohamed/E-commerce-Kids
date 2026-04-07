@@ -1,6 +1,7 @@
 
 using E_commerce.Domain.Models.User;
 using E_commerce.Persistence.ProgramServices;
+using E_commerce.Presentation.Extentions;
 using E_commerce.Services.AutoMapper;
 using E_commerce.Web.Extensions;
 using E_commerce.Web.Middleware;
@@ -27,8 +28,10 @@ namespace E_commerce.Web
             
             // add identity core
             builder.Services.AddDataProtection();
-            
-                   
+
+            // add open api documentation (swagger) with custom configuration defined in OpenApiScalarExtensions.cs 
+            builder.Services.AddOpenApiDocumentation();
+
             // Add services to the container.
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -39,12 +42,7 @@ namespace E_commerce.Web
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
-                app.MapScalarApiReference();
-                app.UseSwaggerUI(options =>
-                {
-                    options.SwaggerEndpoint("/openapi/v1.json", "E-Commerce API v1");
-                });
+                app.MapScalarDocumentation();
             }
 
             app.UseMiddleware<GlobalErrorHandlerMiddleware>();

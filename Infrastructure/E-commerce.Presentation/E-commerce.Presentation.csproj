@@ -5,7 +5,13 @@
     <RootNamespace>E_commerce.Presentation</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.13.20" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\E-commerce.Abstraction\E-commerce.Abstraction.csproj" />
