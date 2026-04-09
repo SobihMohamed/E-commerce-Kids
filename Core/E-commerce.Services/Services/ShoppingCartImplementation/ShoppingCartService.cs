@@ -14,7 +14,7 @@ using System.Text;
 
 namespace E_commerce.Services.Services.ShoppingCartImplementation
 {
-    public class ShoppingCart(IUnitOfWork _unitOfWork, IMapper _mapper) : IShoppingCartService
+    public class ShoppingCartService(IUnitOfWork _unitOfWork, IMapper _mapper) : IShoppingCartService
     {
         public async Task<ShoppingCartDto> GetCartAsync(Guid cartId)
         {
