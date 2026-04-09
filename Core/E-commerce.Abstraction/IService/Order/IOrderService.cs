@@ -13,7 +13,7 @@ namespace E_commerce.Abstraction.IService.Order
         Task<OrderDto> CreateOrderAsync(string userId, OrderToCreateDto orderDto);
         
         // 2 - get all orders for a specific user 
-        Task<IReadOnlyList<OrderDto>> GetOrdersForUserAsync(string userId);
+        Task<IReadOnlyList<OrderSummaryDto>> GetOrdersForUserAsync(string userId);
 
         // 3 - get order details by order id for a specific user (to ensure users can only access their own orders) 
         Task<OrderDto> GetOrderByIdForUserAsync(Guid orderId, string userId);

@@ -6,6 +6,7 @@ using E_commerce.Domain.Exceptions.NotFoundModels;
 using E_commerce.Domain.Models.CustomerInteraction;
 using E_commerce.Domain.Models.Order;
 using E_commerce.Domain.Models.Product;
+using E_commerce.Services.Specification.Order;
 using E_commerce.Services.Specification.ShoppingCart;
 using E_commerce.Shared.Dto_s.Order;
 using E_commerce.Shared.EnumsHelper.Order;
@@ -92,17 +93,38 @@ namespace E_commerce.Services.Services.OrderImplementation
         }
         #endregion
         
-        public Task<IReadOnlyList<OrderDto>> GetOrdersForUserAsync(string userId)
+        public async Task<IReadOnlyList<OrderSummaryDto>> GetOrdersForUserAsync(string userId)
         {
-            throw new NotImplementedException();
+            // 1- get order repository
+            var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+
+            // 2 - get the orders for the user from the database
+            var orderSpec = new GetOrdersForUserSpec(userId);
+            var orders = await orderRepo.GetAllWithSpecAsync(orderSpec);
+            
+            // 3 - map the orders to order dto
+            return mapper.Map<IReadOnlyList<OrderSummaryDto>>(orders);
+        }
+
+        
+
+        public async Task<OrderDto> GetOrderByIdForUserAsync(Guid orderId, string userId)
+        {
+            // 1- get order repository
+            var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+
+            // 2 - get the orders for the user from the database
+            var orderSpec = new GetOrderByIdWithItemsAndAddressSpec(orderId , userId);
+            var order = await orderRepo.GetByIdWithSpecAsync(orderSpec);
+
+            if(order == null)
+                throw new OrderNotFoundException($"Order not found.");
+
+            // 3 - map the orders to order dto
+            return mapper.Map<OrderDto>(order);
         }
 
         public Task<OrderDto> UpdateOrderStatusAsync(Guid orderId, string newStatus)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<OrderDto> GetOrderByIdForUserAsync(Guid orderId, string userId)
         {
             throw new NotImplementedException();
         }
