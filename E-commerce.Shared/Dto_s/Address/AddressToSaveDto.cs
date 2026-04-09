@@ -4,9 +4,8 @@ using System.Text;
 
 namespace E_commerce.Shared.Dto_s.Address
 {
-    public class AddressDto
+    public class AddressToSaveDto
     {
-         public int Id { get; set; }
         public string City { get; set; } = string.Empty;
         public string StreetDetails { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
