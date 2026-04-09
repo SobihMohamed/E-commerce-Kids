@@ -13,6 +13,7 @@ using E_commerce.Shared.EnumsHelper.Order;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace E_commerce.Services.Services.OrderImplementation
 {
@@ -88,6 +89,7 @@ namespace E_commerce.Services.Services.OrderImplementation
             var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
             await orderRepo.AddAsync(order);
             var res = await unitOfWork.SaveChangesAsync();
+            //var errors = res.Errors.Select(e => e.Description); ;
             if(res <= 0) throw new BadRequestExceptionCustome("Failed to create order");
             return mapper.Map<OrderDto>(order);
         }

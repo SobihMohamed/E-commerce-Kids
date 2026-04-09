@@ -6,7 +6,7 @@ namespace E_commerce.Domain.Exceptions
 {
     public class BadRequestExceptionCustome : Exception
     {
-        public readonly IEnumerable<string>? _errors;
+        public IEnumerable<string>? _errors;
         public BadRequestExceptionCustome(string message, IEnumerable<string>? errors = null) 
             : base(message)
         {
