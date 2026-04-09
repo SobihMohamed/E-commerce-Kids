@@ -19,6 +19,6 @@ namespace E_commerce.Abstraction.IService.Order
         Task<OrderDto> GetOrderByIdForUserAsync(Guid orderId, string userId);
 
         // 4 - update order status (for admin, e.g., from Pending to Shipped)
-        Task<OrderDto> UpdateOrderStatusAsync(Guid orderId, string newStatus);
+        Task<OrderDto> UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusDto updateOrderStatusDto);
     }
 }

@@ -124,9 +124,25 @@ namespace E_commerce.Services.Services.OrderImplementation
             return mapper.Map<OrderDto>(order);
         }
 
-        public Task<OrderDto> UpdateOrderStatusAsync(Guid orderId, string newStatus)
+        public async Task<OrderDto> UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusDto Dto)
         {
-            throw new NotImplementedException();
+            var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+
+            var spec = new GetOrderByIdForAdminSpec(orderId);
+            var order = await orderRepo.GetByIdWithSpecAsync(spec);
+
+            if (order == null)
+                throw new OrderNotFoundException($"Order not found.");
+
+            order.OrderStatus = Dto.NewStatus;
+
+            orderRepo.Update(order);
+            var result = await unitOfWork.SaveChangesAsync();
+
+            if (result <= 0)
+                throw new BadRequestExceptionCustome("Failed to update order status.");
+
+            return mapper.Map<OrderDto>(order);
         }
     }
 }

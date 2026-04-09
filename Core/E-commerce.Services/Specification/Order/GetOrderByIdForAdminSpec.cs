@@ -6,10 +6,10 @@ using System.Text;
 
 namespace E_commerce.Services.Specification.Order
 {
-    public class GetOrderByIdWithItemsAndAddressSpec : BaseSpecifications<OrderEntity, Guid>
+    public class GetOrderByIdForAdminSpec : BaseSpecifications<OrderEntity, Guid>
     {
-        public GetOrderByIdWithItemsAndAddressSpec(Guid orderId , string userId)
-            :base(o => o.Id == orderId && o.UserId == userId)
+        public GetOrderByIdForAdminSpec(Guid orderId)
+            : base(o => o.Id == orderId)
         {
             AddInclude(o => o.OrderItems);
             AddInclude(o => o.ShippingAddress);

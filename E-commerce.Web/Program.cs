@@ -7,6 +7,7 @@ using E_commerce.Web.Extensions;
 using E_commerce.Web.Middleware;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
+using System.Text.Json.Serialization;
 namespace E_commerce.Web
 {
     public class Program
@@ -33,7 +34,13 @@ namespace E_commerce.Web
             builder.Services.AddOpenApiDocumentation();
 
             // Add services to the container.
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                //Convert enums to strings in JSON responses for better readability
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
