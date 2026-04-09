@@ -39,7 +39,6 @@ namespace E_commerce.Presentation.Controllers.Category
         public async Task<ActionResult> CreateCategory([FromBody] CategoryToCreateDto dto)
         {
             var category = await _categoryService.CreateCategoryAsync(dto);
-            // بنستخدم Created عشان ترجع 201 Status Code
             return Created(category, "Category created successfully");
         }
 
