@@ -1,4 +1,5 @@
 ﻿using E_commerce.Abstraction.IService.Address;
+using E_commerce.Abstraction.IService.Attachment;
 using E_commerce.Abstraction.IService.Auth;
 using E_commerce.Abstraction.IService.Category;
 using E_commerce.Abstraction.IService.Notification;
@@ -6,6 +7,11 @@ using E_commerce.Abstraction.IService.Order;
 using E_commerce.Abstraction.IService.Product;
 using E_commerce.Abstraction.IService.ShoppingCart;
 using E_commerce.Abstraction.IService.Token;
+using E_commerce.Domain.Contracts.UnitOfWorkPattern;
+using E_commerce.Domain.DbInitializer;
+using E_commerce.Persistence.Implements.InitializerImplement;
+using E_commerce.Persistence.ImplementsContracts.UowImmlementation;
+using E_commerce.Services.Services;
 using E_commerce.Services.Services.AddressImplementaion;
 using E_commerce.Services.Services.AuthImplementation;
 using E_commerce.Services.Services.CategoryImplemetation;
@@ -29,6 +35,9 @@ namespace E_commerce.Web.Extensions
             services.AddScoped<INotificationStrategy, EmailNotificationStrategy>();
 
             // 3. Services
+            services.AddScoped<IUnitOfWork , UnitOfWork>();
+            services.AddScoped<IDbInitializer , DbInitialized>();
+            services.AddScoped<IAttachmentService, AttachementServices>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<INotificationService, NotificationService>();

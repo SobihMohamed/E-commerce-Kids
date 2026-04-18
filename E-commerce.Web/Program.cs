@@ -1,5 +1,5 @@
-
 using E_commerce.Domain.Models.User;
+using E_commerce.Persistence.Extensions;
 using E_commerce.Persistence.ProgramServices;
 using E_commerce.Presentation.Extentions;
 using E_commerce.Services.AutoMapper;
@@ -8,60 +8,72 @@ using E_commerce.Web.Middleware;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
-namespace E_commerce.Web
-{
-    public class Program
+
+var builder = WebApplication.CreateBuilder(args);
+
+// =======================================================
+// 1. Add Services to the container (DI Configuration)
+// =======================================================
+
+// Database & Identity
+builder.Services.InjectDatabaseService(builder.Configuration);
+builder.Services.InjectIdentityCore();
+
+// Application Logic & External Services
+builder.Services.AddApplicationServices(builder.Configuration);
+builder.Services.InjectAutoMapperService();
+
+// Security & Limits
+builder.Services.AddDataProtection();
+builder.Services.InjectRateLimiting();
+
+// API Documentation (OpenAPI & Scalar)
+builder.Services.AddOpenApiDocumentation();
+builder.Services.AddOpenApi();
+
+// Controllers & JSON Options
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+        // Convert enums to strings in JSON responses for better readability
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
-            // get from presistence layer (database configure) 
-            builder.Services.InjectDatabaseService(builder.Configuration);
-            // get from identity layer in web project (Identity core configure)
-            builder.Services.InjectIdentityCore();
-            // inject all application services 
-            builder.Services.AddApplicationServices(builder.Configuration);
-            // get from web layer (rate limiting configure)
-            builder.Services.InjectRateLimiting();
-            // get from services layer
-            builder.Services.InjectAutoMapperService();
-            
-            // add identity core
-            builder.Services.AddDataProtection();
 
-            // add open api documentation (swagger) with custom configuration defined in OpenApiScalarExtensions.cs 
-            builder.Services.AddOpenApiDocumentation();
+// =======================================================
+// 2. Build the Application
+// =======================================================
+var app = builder.Build();
 
-            // Add services to the container.
-            builder.Services.AddControllers()
-            .AddJsonOptions(options =>
-            {
-                //Convert enums to strings in JSON responses for better readability
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+// Seed Database (Top-level statements natively support 'await')
+await app.SeedDatabaseAsync();
 
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
 
-            var app = builder.Build();
+// =======================================================
+// 3. Configure the HTTP Request Pipeline (Middlewares)
+// =======================================================
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapScalarDocumentation();
-            }
+// Global Error Handling (Should be at the very top of the pipeline)
+app.UseMiddleware<GlobalErrorHandlerMiddleware>();
 
-            app.UseMiddleware<GlobalErrorHandlerMiddleware>();
-            app.UseHttpsRedirection();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseStaticFiles();
-            app.MapControllers();
-
-            app.Run();
-        }
-    }
+if (app.Environment.IsDevelopment())
+{
+    // Configure OpenAPI UI
+    app.MapScalarDocumentation();
 }
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+// Security Middlewares (Must be in this specific order)
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Rate Limiting (Added this: Must come after Auth and before Mapping Controllers)
+app.UseRateLimiter();
+
+// Map Endpoints
+app.MapControllers();
+
+// Run the application
+app.Run();
