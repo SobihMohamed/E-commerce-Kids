@@ -21,8 +21,8 @@ namespace E_commerce.Services.AutoMapper.ShoppingCartMapping
             CreateMap<AddToCartDto,CartItemEntity>()
                 .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
                 .ForMember(dest => dest.ProductVariantId, opt => opt.MapFrom(src => src.ProductVariantId))
-                .ForMember(dest => dest.ShoppingCartId, opt => opt.MapFrom(src => src.ShoppingCartId ?? Guid.Empty));
-
+                .ForMember(dest => dest.ShoppingCartId, opt => opt.MapFrom(src => src.ShoppingCartId ?? Guid.Empty))
+                .ForMember(dest => dest.DesignId, opt => opt.MapFrom(src => src.DesignId));
 
             CreateMap<CartItemEntity, CartItemDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductVariant.Product.Name))
@@ -36,7 +36,21 @@ namespace E_commerce.Services.AutoMapper.ShoppingCartMapping
                 .ForMember(dest => dest.ColorName, opt => opt.MapFrom(src => src.ProductVariant.Color.Name))
                 .ForMember(dest => dest.SizeName, opt => opt.MapFrom(src => src.ProductVariant.Size.Name))
 
-                .ForMember(dest => dest.AvailableStock, opt => opt.MapFrom(src => src.ProductVariant.StockQuantity));
+                .ForMember(dest => dest.AvailableStock, opt => opt.MapFrom(src => src.ProductVariant.StockQuantity))
+
+                // NEW: Customization Details Mapping
+
+                .ForMember(dest => dest.DesignId, opt => opt.MapFrom(src => src.DesignId))
+
+                // get the design name if the design is not null otherwise return null
+                .ForMember(dest => dest.DesignName, opt => opt.MapFrom(src => src.Design != null ? src.Design.Name : null))
+
+                // return the design image url if the design is not null otherwise return empty string
+                .ForMember(dest => dest.DesignImageUrl, opt => opt.MapFrom<PictureUrlResolver<CartItemEntity, CartItemDto>, string>
+                    (src => src.Design != null ? src.Design.ImageUrl : string.Empty))
+
+                // calculate the design price based on whether the design is null or not (if the design is null then the price is 0 otherwise the price is 15)
+                .ForMember(dest => dest.DesignPrice, opt => opt.MapFrom(src => src.DesignId.HasValue ? 50m : 0m));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using E_commerce.Domain.Models.Address;
 using E_commerce.Domain.Models.Order;
+using E_commerce.Services.Resolver;
 using E_commerce.Shared.Dto_s.Address;
 using E_commerce.Shared.Dto_s.Order;
 using System;
@@ -15,7 +16,9 @@ namespace E_commerce.Services.AutoMapper.OrderMapping
         {
             CreateMap<AddressEntity, AddressDto>();
 
-            CreateMap<OrderItemEntity, OrderItemDto>();
+            CreateMap<OrderItemEntity, OrderItemDto>()
+                .ForMember(dest => dest.CustomizedDesignUrl, opt =>
+                    opt.MapFrom<PictureUrlResolver<OrderItemEntity, OrderItemDto>, string>(src => src.CustomizedDesignUrl!));
 
             CreateMap<OrderEntity, OrderDto>()
                 .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()))

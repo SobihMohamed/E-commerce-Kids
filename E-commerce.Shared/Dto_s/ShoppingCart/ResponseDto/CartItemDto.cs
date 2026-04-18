@@ -21,7 +21,15 @@ namespace E_commerce.Shared.Dto_s.ShoppingCart.ResponseDto
         public int Quantity { get; set; } 
         public int AvailableStock { get; set; } // Count of items available in stock for this product variant to prevent overselling
 
-        // SubTotal price for this cart item (UnitPrice * Quantity)
-        public decimal SubTotal => UnitPrice * Quantity;
+        // ==========================================
+        // 🌟 NEW: Design display info & cost
+        // ==========================================
+        public int? DesignId { get; set; }
+        public string? DesignName { get; set; }
+        public string? DesignImageUrl { get; set; }
+        public decimal DesignPrice { get; set; } // سعر التخصيص (مثلاً 15 دولار)
+
+        // 🌟 UPDATED: SubTotal equation (سعر التيشرت + سعر الديزاين) * الكمية
+        public decimal SubTotal => (UnitPrice + DesignPrice) * Quantity;
     }
 }

@@ -1,4 +1,5 @@
-﻿using E_commerce.Domain.Models.Product;
+﻿using E_commerce.Domain.Models.Designs;
+using E_commerce.Domain.Models.Product;
 using E_commerce.Domain.Models.User;
 using System;
 using System.Collections.Generic;
@@ -15,5 +16,11 @@ namespace E_commerce.Domain.Models.CustomerInteraction
 
         public int ProductVariantId { get; set; }
         public virtual ProductVariantEntity ProductVariant { get; set; } = null!;
+
+        // ==========================================
+        // 🌟 NEW: Customization Details
+        // ==========================================
+        public int? DesignId { get; set; } // Nullable عشان لو التيشرت سادة
+        public virtual DesignsEntity? Design { get; set; }
     }
 }

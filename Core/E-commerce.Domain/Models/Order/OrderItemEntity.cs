@@ -1,4 +1,5 @@
-﻿using E_commerce.Domain.Models.Product;
+﻿using E_commerce.Domain.Models.Designs;
+using E_commerce.Domain.Models.Product;
 
 
 namespace E_commerce.Domain.Models.Order
@@ -10,6 +11,13 @@ namespace E_commerce.Domain.Models.Order
 
         public int ProductVariantId { get; set; }
         public virtual ProductVariantEntity ProductVariant { get; set; } = null!;
+        public int? DesignId { get; set; } // Nullable: عشان لو اليوزر اشترى التيشرت سادة
+        public virtual DesignsEntity? Design { get; set; }
+
+        // Snapshots for Customization
+        public string? DesignName { get; set; } 
+        public decimal CustomizationPrice { get; set; } 
+        public string? CustomizedDesignUrl { get; set; } 
 
         // take snapshot of some product details at the time of order 
         // to ensure we have the correct info even if product details change later

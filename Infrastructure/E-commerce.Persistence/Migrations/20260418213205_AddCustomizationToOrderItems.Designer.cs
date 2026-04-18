@@ -4,6 +4,7 @@ using E_commerce.Persistence.E_commerceDbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_commerce.Persistence.Migrations
 {
     [DbContext(typeof(EcommerceDbContext))]
-    partial class EcommerceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260418213205_AddCustomizationToOrderItems")]
+    partial class AddCustomizationToOrderItems
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,9 +135,6 @@ namespace E_commerce.Persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("DesignId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -154,8 +154,6 @@ namespace E_commerce.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DesignId");
 
                     b.HasIndex("ProductVariantId");
 
@@ -919,10 +917,6 @@ namespace E_commerce.Persistence.Migrations
 
             modelBuilder.Entity("E_commerce.Domain.Models.CustomerInteraction.CartItemEntity", b =>
                 {
-                    b.HasOne("E_commerce.Domain.Models.Designs.DesignsEntity", "Design")
-                        .WithMany()
-                        .HasForeignKey("DesignId");
-
                     b.HasOne("E_commerce.Domain.Models.Product.ProductVariantEntity", "ProductVariant")
                         .WithMany()
                         .HasForeignKey("ProductVariantId")
@@ -934,8 +928,6 @@ namespace E_commerce.Persistence.Migrations
                         .HasForeignKey("ShoppingCartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Design");
 
                     b.Navigation("ProductVariant");
 

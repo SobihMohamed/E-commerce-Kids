@@ -10,10 +10,6 @@ using E_commerce.Services.Specification.Order;
 using E_commerce.Services.Specification.ShoppingCart;
 using E_commerce.Shared.Dto_s.Order;
 using E_commerce.Shared.EnumsHelper.Order;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace E_commerce.Services.Services.OrderImplementation
 {
