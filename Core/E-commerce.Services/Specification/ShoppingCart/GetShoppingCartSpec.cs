@@ -33,6 +33,10 @@ namespace E_commerce.Services.Specification.ShoppingCart
             var sizeInclude = $"{varientInclude}.{nameof(ProductVariantEntity.Size)}";
             IncludeStrings.Add(sizeInclude);
 
+            // include to Design in CartItem
+            var designInclude = $"{nameof(ShoppingCartEntity.CartItems)}.{nameof(CartItemEntity.Design)}";
+            IncludeStrings.Add(designInclude);
+
             // Order by 
             // ==========================================
             // final query in EF-Core => 
@@ -46,7 +50,10 @@ namespace E_commerce.Services.Specification.ShoppingCart
             //     .Include(c => c.CartItems)
             //         .ThenInclude(i => i.ProductVariant)
             //             .ThenInclude(v => v.Size)
+            //      .Include(c => c.CartItems)
+            //        .ThenInclude(i => i.Design)
             //     .Where(c => c.Id == cartId)
+            //     
             // ==========================================
 
             // ==========================================

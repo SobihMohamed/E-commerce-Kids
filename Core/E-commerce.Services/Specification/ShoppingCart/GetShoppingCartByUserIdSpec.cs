@@ -1,5 +1,6 @@
 ﻿using E_commerce.Domain.Contracts.Specifications.BaseSpec;
 using E_commerce.Domain.Models.CustomerInteraction;
+using E_commerce.Domain.Models.Product;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,6 +16,19 @@ namespace E_commerce.Services.Specification.ShoppingCart
 
             var variantInclude = $"{nameof(ShoppingCartEntity.CartItems)}.{nameof(CartItemEntity.ProductVariant)}";
             IncludeStrings.Add(variantInclude);
+
+            var variantIncludeWithProduct = $"{nameof(ShoppingCartEntity.CartItems)}.{nameof(CartItemEntity.ProductVariant)}.{nameof(ProductVariantEntity.Product)}";
+            IncludeStrings.Add(variantIncludeWithProduct);
+
+            var variantIncludeWithColor = $"{nameof(ShoppingCartEntity.CartItems)}.{nameof(CartItemEntity.ProductVariant)}.{nameof(ProductVariantEntity.Color)}";
+            IncludeStrings.Add(variantIncludeWithColor);
+
+            var variantIncludeWithSize = $"{nameof(ShoppingCartEntity.CartItems)}.{nameof(CartItemEntity.ProductVariant)}.{nameof(ProductVariantEntity.Size)}";
+            IncludeStrings.Add(variantIncludeWithSize);
+
+
+            var designInclude = $"{nameof(ShoppingCartEntity.CartItems)}.{nameof(CartItemEntity.Design)}";
+            IncludeStrings.Add(designInclude);
         }
     }
 }

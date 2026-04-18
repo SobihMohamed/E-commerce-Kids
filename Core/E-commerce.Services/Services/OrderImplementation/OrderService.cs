@@ -28,7 +28,7 @@ namespace E_commerce.Services.Services.OrderImplementation
             // 3 - convert the cart items to order items
             var orderItems = ConvertCartItemToOrder(shoppingCart);
             // 4 - calculate the order subtotal
-            var subTotal = orderItems.Sum(x => x.ProductPrice * x.Quantity);
+            var subTotal = orderItems.Sum(x => (x.ProductPrice + x.CustomizationPrice) * x.Quantity);
             var shippingFee = 10; // for example
 
             // 5 - create the order entity
@@ -57,7 +57,7 @@ namespace E_commerce.Services.Services.OrderImplementation
                 if(dbProductVariant == null) 
                     throw new ProductVariantNotFound($"Product not found");
                 if(dbProductVariant.StockQuantity < item.Quantity)
-                    throw new ProductVariantNotFound($"Product {item.ProductVariant.Product.Name} with color {item.ProductVariant.Color} and size {item.ProductVariant.Size} has only {dbProductVariant.StockQuantity} items in stock");
+                    throw new ProductVariantNotFound($"Product {item.ProductVariant.Product.Name} with color {item.ProductVariant.Color?.Name} and size {item.ProductVariant.Size?.Name} has only {dbProductVariant.StockQuantity} items in stock");
                 dbProductVariant.StockQuantity -= item.Quantity; // reduce the stock quantity by the ordered quantity
                 
                 productVariantRepo.Update(dbProductVariant); // update the product variant in the database
@@ -75,7 +75,12 @@ namespace E_commerce.Services.Services.OrderImplementation
                     ProductVariantId = item.ProductVariantId,
                     ProductName = item.ProductVariant.Product.Name,
                     ProductPrice = item.ProductVariant.Product.Price,
-                    Quantity = item.Quantity
+                    Quantity = item.Quantity,
+                    //NEW: Customization Details Snapshot
+                    DesignId = item.DesignId,
+                    DesignName = item.Design?.Name,
+                    CustomizedDesignUrl = item.Design?.ImageUrl,
+                    CustomizationPrice = item.DesignId.HasValue ? 15.0m : 0m
                 });
             }
             return OrderItems;
