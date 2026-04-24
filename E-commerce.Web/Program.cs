@@ -27,6 +27,10 @@ builder.Services.InjectAutoMapperService();
 builder.Services.AddDataProtection();
 builder.Services.InjectRateLimiting();
 
+// Add JWT Authentication and CORS configuration
+builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
+builder.Services.AddCustomCors(builder.Configuration);
+
 // API Documentation (OpenAPI & Scalar)
 builder.Services.AddOpenApiDocumentation();
 builder.Services.AddOpenApi();
