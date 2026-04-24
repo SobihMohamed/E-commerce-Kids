@@ -20,8 +20,11 @@ namespace E_commerce.Persistence.Configurations
             
             builder.Property(oi => oi.ProductPrice)
                 .IsRequired()
-                .HasColumnType("decimal(18,2)"); 
-            
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.CustomizationPrice)
+                   .HasColumnType("decimal(18,2)");
+
             builder.Property(oi => oi.Quantity)
                 .IsRequired();
 

@@ -49,7 +49,7 @@ namespace E_commerce.Web.Extensions
 
                     ValidateLifetime = true,
 
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtTokenSettings:SecretKey"])), // 💡 اتعدلت
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtTokenSettings:Key"])), 
                     ClockSkew = TimeSpan.Zero
                 };
 
