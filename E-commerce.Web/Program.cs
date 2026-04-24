@@ -57,23 +57,26 @@ await app.SeedDatabaseAsync();
 // 3. Configure the HTTP Request Pipeline (Middlewares)
 // =======================================================
 
-// Global Error Handling (Should be at the very top of the pipeline)
 app.UseMiddleware<GlobalErrorHandlerMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    // Configure OpenAPI UI
+    app.MapOpenApi();
     app.MapScalarDocumentation();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+
+app.UseRouting();
+
 // Security Middlewares (Must be in this specific order)
+app.UseCors("CorsPolicy"); 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Rate Limiting (Added this: Must come after Auth and before Mapping Controllers)
+// Rate Limiting
 app.UseRateLimiter();
 
 // Map Endpoints
