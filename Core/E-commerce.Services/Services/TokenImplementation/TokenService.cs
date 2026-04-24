@@ -39,7 +39,7 @@ namespace E_commerce.Services.Services.TokenImplementation
 
             // 4 - get the secret key from configuration and create a symmetric security key 
             // we get it as string 
-            var secretKey = configuration.GetSection("JwtTokenSettings:SecretKey").Value;
+            var secretKey = configuration.GetSection("JwtTokenSettings:Key").Value;
 
             // 5 - create signing credentials using the symmetric security key and a hashing algorithm
             // convert secret key to byte array using UTF8 encoding
