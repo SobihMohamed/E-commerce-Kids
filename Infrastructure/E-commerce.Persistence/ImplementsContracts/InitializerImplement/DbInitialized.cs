@@ -1,4 +1,5 @@
 ﻿using E_commerce.Domain.DbInitializer;
+using E_commerce.Domain.Models.User;
 using E_commerce.Persistence.E_commerceDbContext;
 using E_commerce.Persistence.Seeds;
 using Microsoft.AspNetCore.Identity;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E_commerce.Persistence.Implements.InitializerImplement
 {
-    public class DbInitialized(EcommerceDbContext ecommerceDbContext , RoleManager<IdentityRole> roleManager) : IDbInitializer
+    public class DbInitialized(EcommerceDbContext ecommerceDbContext , UserManager<ApplicationUser> userManager , RoleManager<IdentityRole> roleManager) : IDbInitializer
     {
         public async Task DataSeedAsync()
         {
@@ -22,6 +23,7 @@ namespace E_commerce.Persistence.Implements.InitializerImplement
                 throw;
             }
             await SeederAsync.SeedRolesAsync(roleManager);
+            await SeederAsync.SeedAdminUserAsync(userManager);
         }
     }
 }

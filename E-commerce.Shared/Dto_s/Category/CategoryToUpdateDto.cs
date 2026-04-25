@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -12,6 +13,6 @@ namespace E_commerce.Shared.Dto_s.Category
 
         public string? Description { get; set; }
 
-        public string? PictureUrl { get; set; }
+        public IFormFile? PictureUrl { get; set; }
     }
 }

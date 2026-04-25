@@ -1,4 +1,5 @@
-﻿using E_commerce.Shared.EnumsHelper.User;
+﻿using E_commerce.Domain.Models.User;
+using E_commerce.Shared.EnumsHelper.User;
 using Microsoft.AspNetCore.Identity;
 namespace E_commerce.Persistence.Seeds
 {
@@ -14,5 +15,35 @@ namespace E_commerce.Persistence.Seeds
                 }
             }
         }
+        public static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager)
+        {
+            string adminEmail = "admin@softbridge.com";
+
+            // ensure existence of admin
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+            if (adminUser == null)
+            {
+                var newAdmin = new ApplicationUser
+                {
+                    UserName = adminEmail.ToUpper(),
+                    Email = adminEmail,
+                    FullName = "System Admin",
+                    UserType = UserType.Admin,
+                    EmailConfirmed = true
+                };
+
+                // create admin
+                var result = await userManager.CreateAsync(newAdmin, "Admin@123456");
+
+                // if created 
+                if (result.Succeeded)
+                {
+
+                    await userManager.AddToRoleAsync(newAdmin, UserType.Admin.ToString());
+                }
+            }
+        }
+
     }
 }

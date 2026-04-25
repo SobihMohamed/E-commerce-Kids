@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace E_commerce.Shared.Dto_s.Notificaiton.Settings
+namespace E_commerce.Shared.Common.Dto.Notification.Settings
 {
-    public class EmailSettings
+    public class EmailSettingsDto
     {
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;

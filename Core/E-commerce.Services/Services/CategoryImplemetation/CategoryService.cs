@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using E_commerce.Abstraction.IService.Attachment;
 using E_commerce.Abstraction.IService.Category;
 using E_commerce.Domain.Contracts.UnitOfWorkPattern;
 using E_commerce.Domain.Exceptions;
@@ -12,12 +13,16 @@ using System.Text;
 
 namespace E_commerce.Services.Services.CategoryImplemetation
 {
-    public class CategoryService(IUnitOfWork _unitOfWork, IMapper _mapper) : ICategoryService
+    public class CategoryService(IUnitOfWork _unitOfWork, IMapper _mapper , IAttachmentService attachmentService) : ICategoryService
     {
         public async Task<CategoryDto> CreateCategoryAsync(CategoryToCreateDto categoryDto)
         {
             var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
             var categoryEntity = _mapper.Map<CategoryEntity>(categoryDto);
+
+            string imagePath = await attachmentService.UploadImageAsync(categoryDto.PictureUrl,"categories/images");
+
+            categoryEntity.PictureUrl = imagePath;
             await categoryRepo.AddAsync(categoryEntity);
             var result = await _unitOfWork.SaveChangesAsync();
             if (result <= 0)
@@ -67,6 +72,10 @@ namespace E_commerce.Services.Services.CategoryImplemetation
             var Category = await categoryRepo.GetByIdAsync(id);
             if (Category == null)
                 throw new CategoryNotFoundException();
+            if (!string.IsNullOrEmpty(Category.PictureUrl))
+            {
+                await attachmentService.DeleteImage(Category.PictureUrl);
+            }
             categoryRepo.Delete(Category);
             var result = await _unitOfWork.SaveChangesAsync();
             return result > 0;

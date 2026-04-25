@@ -1,14 +1,13 @@
-﻿using E_commerce.Abstraction.IService.Notification;
-using Microsoft.Extensions.Options;
-using MailKit.Net.Smtp;
-using MailKit.Security;
+﻿using Microsoft.Extensions.Options;
 using MimeKit;
-
+using MailKit.Security;
+using MailKit.Net.Smtp;
+using E_commerce.Abstraction.IService.Notification;
+using E_commerce.Shared.Common.Dto.Notification.Settings;
 using E_commerce.Shared.EnumsHelper.Notification;
 using E_commerce.Shared.Dto_s.Notificaiton;
-using E_commerce.Shared.Common.Dto.Notification.Settings;
 
-namespace E_commerce.Services.Services.NotificationImplementation
+namespace E_commerce.Services.Services.NotificationImplementation.StrategyPattern
 {
     public class EmailNotificationStrategy(IOptions<EmailSettingsDto> emailSettings) : INotificationStrategy
     {
@@ -22,7 +21,7 @@ namespace E_commerce.Services.Services.NotificationImplementation
 
             // 1. prepare message
             var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("Ecommerce-Kidss", _emailSettings.Email));
+            emailMessage.From.Add(new MailboxAddress("Kids-Ecommerce", _emailSettings.Email));
 
             // 2. for design body
             emailMessage.To.Add(new MailboxAddress("", ContentDto.Email));

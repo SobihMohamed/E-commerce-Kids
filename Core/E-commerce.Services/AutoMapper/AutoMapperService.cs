@@ -3,6 +3,7 @@ using E_commerce.Services.AutoMapper.AuthMapping;
 using E_commerce.Services.AutoMapper.CategroyMapping;
 using E_commerce.Services.AutoMapper.DesignMapping;
 using E_commerce.Services.AutoMapper.LookUpMapping;
+using E_commerce.Services.AutoMapper.NotificationMapping;
 using E_commerce.Services.AutoMapper.OrderMapping;
 using E_commerce.Services.AutoMapper.ProductMapping;
 using E_commerce.Services.AutoMapper.ProfileMapping;
@@ -29,6 +30,7 @@ namespace E_commerce.Services.AutoMapper
                 cfg.AddProfile(new AddressProfile());   
                 cfg.AddProfile(new LookupProfile());
                 cfg.AddProfile(new DesignProfile());
+                cfg.AddProfile(new NotificationProfile());
             });
             return services;
         }
