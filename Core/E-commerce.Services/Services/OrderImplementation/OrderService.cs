@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using E_commerce.Abstraction.IService.Notification;
 using E_commerce.Abstraction.IService.Order;
 using E_commerce.Domain.Contracts.UnitOfWorkPattern;
 using E_commerce.Domain.Exceptions;
@@ -6,14 +7,19 @@ using E_commerce.Domain.Exceptions.NotFoundModels;
 using E_commerce.Domain.Models.CustomerInteraction;
 using E_commerce.Domain.Models.Order;
 using E_commerce.Domain.Models.Product;
+using E_commerce.Domain.Models.User;
 using E_commerce.Services.Specification.Order;
 using E_commerce.Services.Specification.ShoppingCart;
 using E_commerce.Shared.Dto_s.Order;
 using E_commerce.Shared.EnumsHelper.Order;
+using Microsoft.AspNetCore.Identity;
 
 namespace E_commerce.Services.Services.OrderImplementation
 {
-    public class OrderService(IUnitOfWork unitOfWork, IMapper mapper) : IOrderService
+    public partial class OrderService(IUnitOfWork unitOfWork,
+        IMapper mapper,
+        INotificationService notificationService,
+        UserManager<ApplicationUser> userManager) : IOrderService
     {
         public async Task<OrderDto> CreateOrderAsync(string userId, OrderToCreateDto orderDto) // orderDto contains the shipping address id
         {
@@ -44,7 +50,10 @@ namespace E_commerce.Services.Services.OrderImplementation
                 OrderItems = orderItems
             };
             // 6 - save the order to the database
-            return await SaveOrderInDb(OrderEntity);
+            var savedOrderDto = await SaveOrderInDb(OrderEntity);
+            await NotifyOnOrderCreationAsync(OrderEntity);
+
+            return savedOrderDto;
         }
         #region Helper Methods in CreateOrderAsync
         private async Task checkProductVariantandUpdateDb(ShoppingCartEntity shoppingCart)
@@ -144,6 +153,8 @@ namespace E_commerce.Services.Services.OrderImplementation
 
             if (result <= 0)
                 throw new BadRequestExceptionCustome("Failed to update order status.");
+
+            await NotifyOnOrderStatusUpdateAsync(order);
 
             return mapper.Map<OrderDto>(order);
         }

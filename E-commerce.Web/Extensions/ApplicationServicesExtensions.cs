@@ -20,7 +20,9 @@ using E_commerce.Services.Services.AuthImplementation;
 using E_commerce.Services.Services.CategoryImplemetation;
 using E_commerce.Services.Services.DesignImplementation;
 using E_commerce.Services.Services.LookupImplementation;
+using E_commerce.Services.Services.NotificationImplementaion;
 using E_commerce.Services.Services.NotificationImplementation;
+using E_commerce.Services.Services.NotificationImplementation.StrategyPattern;
 using E_commerce.Services.Services.OrderImplementation;
 using E_commerce.Services.Services.ProductImplementation;
 using E_commerce.Services.Services.ShoppingCartImplementation;
@@ -46,7 +48,6 @@ namespace E_commerce.Web.Extensions
             services.AddScoped<IAttachmentService, AttachementServices>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
             services.AddScoped<ICategoryService, CategoryService>();
