@@ -1,6 +1,7 @@
 ﻿using E_commerce.Domain.Models.Order;
 using E_commerce.Shared.Dto_s.Notificaiton;
 using E_commerce.Shared.EnumsHelper.Notification;
+using E_commerce.Shared.EnumsHelper.Order;
 using E_commerce.Shared.EnumsHelper.User;
 using System;
 using System.Collections.Generic;
@@ -49,12 +50,21 @@ namespace E_commerce.Services.Services.OrderImplementation
             var user = await userManager.FindByIdAsync(order.UserId);
             if (user == null) return;
 
+            string statusMessage = order.OrderStatus switch
+            {
+                OrderStatus.Processing => "تم تأكيد طلبك! جاري الآن تجهيز ملابسك المخصصة للطباعة. ✨",
+                OrderStatus.Shipped => "خبر سعيد! طلبك في الطريق إليك الآن. 🚚",
+                OrderStatus.Delivered => "تم تسليم الطلب. نتمنى أن تنال ملابس Radiant Studio إعجاب طفلك! ❤️",
+                OrderStatus.Cancelled => "للأسف، تم إلغاء طلبك. يمكنك التواصل معنا لمعرفة السبب.",
+                _ => $"تم تحديث حالة طلبك رقم {order.OrderNumber} إلى {order.OrderStatus}"
+            };
+
             var customerNotification = new NotificationContentDto
             {
                 UserId = order.UserId,
                 Email = user.Email,
-                Subject = "تحديث حالة الطلب 🚚",
-                Body = $"مرحباً {user.FullName}، تم تحديث حالة طلبك رقم {order.OrderNumber} لتصبح الآن: {order.OrderStatus}. يمكنك متابعة طلبك من خلال حسابك.",
+                Subject = "تحديث بخصوص طلبك 🛍️",
+                Body = $"مرحباً {user.FullName}، {statusMessage}",
                 ReferenceId = order.Id.ToString(),
             };
 
