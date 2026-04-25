@@ -4,6 +4,7 @@ using E_commerce.Persistence.ProgramServices;
 using E_commerce.Presentation.Extentions;
 using E_commerce.Services.AutoMapper;
 using E_commerce.Web.Extensions;
+using E_commerce.Web.Hubs.Notification;
 using E_commerce.Web.Middleware;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
@@ -42,6 +43,8 @@ builder.Services.AddControllers()
         // Convert enums to strings in JSON responses for better readability
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+builder.Services.AddSignalR();
+
 
 
 // =======================================================
@@ -81,6 +84,7 @@ app.UseRateLimiter();
 
 // Map Endpoints
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub");// notification hub endpoint for SignalR
 
 // Run the application
 app.Run();

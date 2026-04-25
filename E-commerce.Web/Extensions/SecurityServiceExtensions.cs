@@ -54,21 +54,20 @@ namespace E_commerce.Web.Extensions
                 };
 
                 // SignalR Events
-                //options.Events = new JwtBearerEvents
-                //{
-                //    OnMessageReceived = context =>
-                //    {
-                //        var accessToken = context.Request.Query["access_token"];
-                //        var path = context.HttpContext.Request.Path;
-                //        // If the request is for our SignalR hubs, get the token from the query string
-                //        if (!string.IsNullOrEmpty(accessToken) &&
-                //            (path.StartsWithSegments("/notificationHub") || path.StartsWithSegments("/chatHub")))
-                //        {
-                //            context.Token = accessToken;
-                //        }
-                //        return Task.CompletedTask;
-                //    }
-                //};
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        // If the request is for our SignalR hubs, get the token from the query string
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             return services;

@@ -4,6 +4,7 @@ using E_commerce.Persistence.E_commerceDbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_commerce.Persistence.Migrations
 {
     [DbContext(typeof(EcommerceDbContext))]
-    partial class EcommerceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260425000125_DropNotificationsCompletely")]
+    partial class DropNotificationsCompletely
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -374,66 +377,6 @@ namespace E_commerce.Persistence.Migrations
                         .HasDatabaseName("IX_Sizes_Unique_Name");
 
                     b.ToTable("Sizes", (string)null);
-                });
-
-            modelBuilder.Entity("E_commerce.Domain.Models.Notification.NotificationEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsRead")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("NotificationType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ReferenceId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SenderId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SenderId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("E_commerce.Domain.Models.Order.OrderEntity", b =>
@@ -980,24 +923,6 @@ namespace E_commerce.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("E_commerce.Domain.Models.Notification.NotificationEntity", b =>
-                {
-                    b.HasOne("E_commerce.Domain.Models.User.ApplicationUser", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("E_commerce.Domain.Models.User.ApplicationUser", "User")
-                        .WithMany("Notifications")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Sender");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("E_commerce.Domain.Models.Order.OrderEntity", b =>
                 {
                     b.HasOne("E_commerce.Domain.Models.Address.AddressEntity", "ShippingAddress")
@@ -1169,8 +1094,6 @@ namespace E_commerce.Persistence.Migrations
             modelBuilder.Entity("E_commerce.Domain.Models.User.ApplicationUser", b =>
                 {
                     b.Navigation("Addresses");
-
-                    b.Navigation("Notifications");
 
                     b.Navigation("Orders");
 
