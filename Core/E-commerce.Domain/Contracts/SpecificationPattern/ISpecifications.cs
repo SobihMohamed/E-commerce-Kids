@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks.Dataflow;
 
 namespace E_commerce.Domain.Contracts.SpecificationPattern
 {
     // why where TEntity : IEntity<TKey> ,
     // because we want to make sure that the entity has a key and we can use it in the specifications
-    public interface ISpecifications<TEntity , TKey> where TEntity : IEntity<TKey>
+    public interface ISpecifications<TEntity , TKey> where TEntity : IEntity<TKey> // product
     {
         // this is the where clause in the specifications return true or false
-        Expression<Func<TEntity, bool>> Criteria { get; } 
+        Expression<Func<TEntity, bool>> Criteria { get; } // where .where(p.id == 10) => T & F
         
         // this is the include clause in the specifications to include related entities return a list of expressions like x => x.Category
-        List<Expression<Func<TEntity, object>>> Includes { get; }
+        List<Expression<Func<TEntity, object>>> Includes { get; } //.include(p ). include(p)
+                                                                  // product join category 
+                                                                  // join cart
 
         #region Example Why use IncludeStrings
         /*
@@ -26,6 +29,7 @@ namespace E_commerce.Domain.Contracts.SpecificationPattern
             Query : SELECT * FROM ShoppingCarts c
                     LEFT JOIN CartItems i ON c.Id = i.ShoppingCartId
                     WHERE c.Id = @id
+
             => Ef core has an thenInclude so we need to implement this method here why ? 
             var cart = await _context.ShoppingCarts
                          .Include(c => c.CartItems)           
@@ -38,10 +42,13 @@ namespace E_commerce.Domain.Contracts.SpecificationPattern
                     LEFT JOIN ProductVariants v ON i.ProductVariantId = v.Id
                     LEFT JOIN Products p ON v.ProductId = p.Id
                     WHERE c.Id = @id
-
+        
             BUT THE normal include method will not work because it will only include the first level of related entities
             and it will not include the nested related entities
-            
+            // include(shop => shop.cartitem) 
+            // includeString("CartItems.ProductVariant")
+            // includeString("CartItems.Design")
+
             so EF Core provides =>  .Include("CartItems.ProductVariant.Product") you tell him 
             get the cart and include the cart items and for each cart item include the product variant and for each product variant include the product
             Ef convert it to => 

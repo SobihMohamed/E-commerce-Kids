@@ -10,7 +10,6 @@ namespace E_commerce.Shared.Common.Params.Product
         public int? CategoryId { get; set; }
         public int? ColorId { get; set; }
         public int? SizeId { get; set; }
-        public string? TargetAge { get; set; }
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
 

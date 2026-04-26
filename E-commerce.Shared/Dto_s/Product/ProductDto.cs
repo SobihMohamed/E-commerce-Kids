@@ -1,4 +1,7 @@
-﻿using System;
+﻿using E_commerce.Shared.Dto_s.Lookups.Color;
+using E_commerce.Shared.Dto_s.Lookups.Size;
+using E_commerce.Shared.Dto_s.Product.Variant;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,6 +15,8 @@ namespace E_commerce.Shared.Dto_s.Product
         public string MainImageUrl { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty; 
         // font make it as circles 
-        public List<string> AvailableColorHexCodes { get; set; } = new();
+        //public List<ColorDto> AvailableColor { get; set; } = new();
+        //public List<SizeDto> AvailableSize{ get; set; } = new();
+        public List<ProductVariantDto> Variants { get; set; } = new();
     }
 }

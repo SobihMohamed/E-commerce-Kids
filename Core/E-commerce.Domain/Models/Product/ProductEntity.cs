@@ -8,7 +8,7 @@ namespace E_commerce.Domain.Models.Product
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string MainImageUrl { get; set; } = string.Empty;
-        public decimal Price { get; set; }
+        public decimal Price { get; set; } // +200 - 200
 
         // Foreign Key 
         public int CategoryId { get; set; }

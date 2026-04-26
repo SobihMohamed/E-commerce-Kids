@@ -142,6 +142,8 @@ namespace E_commerce.Services.Services.ProductImplementation
             }
             return await _unitOfWork.SaveChangesAsync() > 0;
         }
+        
+        #region Handler Methods
         private void HandleProductVariantsUpdate(ProductToUpdateDto productDto, ProductEntity existingProduct)
         {
             if (productDto.Variants != null)
@@ -225,6 +227,6 @@ namespace E_commerce.Services.Services.ProductImplementation
                 return segments[productsIndex + 1]; // Return existing folder name
             return Guid.NewGuid().ToString(); // Fallback to new folder if structure is unexpected
         }
-
+        #endregion
     }
 }

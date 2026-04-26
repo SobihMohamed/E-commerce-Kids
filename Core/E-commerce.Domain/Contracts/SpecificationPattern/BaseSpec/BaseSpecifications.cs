@@ -39,7 +39,7 @@ namespace E_commerce.Domain.Contracts.Specifications.BaseSpec
         // private set because we want to set it in the constructor and we don't want to change it later
         public List<Expression<Func<TEntity, object>>> Includes { get; private set; } = new List<Expression<Func<TEntity, object>>>();
 
-        // this method is used to add include expressions to the specifications classes
+        // this method is used to add include expressions to the specifications classes 
         protected void AddInclude(Expression<Func<TEntity, object>> includeExpression )
             => Includes.Add(includeExpression);
         #endregion

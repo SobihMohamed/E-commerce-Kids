@@ -10,17 +10,17 @@ namespace E_commerce.Services.Specification.Product
 {
     public class ProductFiltrationSpec : BaseSpecifications<ProductEntity, int>
     {
-        public ProductFiltrationSpec(ProductSpecParams specParams)
+        public ProductFiltrationSpec(ProductSpecParams specParams) // search ? true || false
     : base(p =>
-        // 1. Search
+        // 1. Search where = product.Name Contain(search) AND Where product.categoryid = categoryid
         (string.IsNullOrEmpty(specParams.Search) || p.Name.ToLower().Contains(specParams.Search)) &&
 
-        // 2. Category
+        // 2. Category T & F 
         (!specParams.CategoryId.HasValue || p.CategoryId == specParams.CategoryId) &&
 
-        // 3. Price
-        (!specParams.MinPrice.HasValue || p.Price >= specParams.MinPrice) &&
-        (!specParams.MaxPrice.HasValue || p.Price <= specParams.MaxPrice) &&
+        // 3. Price t & f
+        (!specParams.MinPrice.HasValue || p.Price >= specParams.MinPrice) && // price > 500
+        (!specParams.MaxPrice.HasValue || p.Price <= specParams.MaxPrice) && // price  < 1000
 
         // 4. Variants
         (!specParams.ColorId.HasValue || p.Variants.Any(v => v.ColorId == specParams.ColorId)) &&
@@ -29,12 +29,19 @@ namespace E_commerce.Services.Specification.Product
     )
         {
             AddInclude(p => p.Category);
-            AddInclude(p => p.Variants);
+            AddInclude(p => p.Variants); 
+            
+            var SizeNavigation = $"{nameof(ProductEntity.Variants)}.{nameof(ProductVariantEntity.Size)}"; // ProductEntity.Variant.Size
+            IncludeStrings.Add(SizeNavigation);
+       
+            var ColorNavigation = $"{nameof(ProductEntity.Variants)}.{nameof(ProductVariantEntity.Color)}"; // ProductEntity.Variant.Size
+            IncludeStrings.Add(ColorNavigation);
+
             AddInclude(p => p.Images);
 
             if (specParams.Sort.HasValue) 
             {
-                switch (specParams.Sort.Value) 
+                switch (specParams.Sort.Value) // priceAsc || priceDesc
                 {
                     case ProductArranges.PriceAsc:
                         AddOrderBy(p => p.Price, isDescending: false);

@@ -14,6 +14,11 @@ namespace E_commerce.Services.Specification.Product
             AddInclude(p => p.Category);
             AddInclude(p => p.Images);
             AddInclude(p => p.Variants);
+            var SizeNavigation = $"{nameof(ProductEntity.Variants)}.{nameof(ProductVariantEntity.Size)}"; // ProductEntity.Variant.Size
+            IncludeStrings.Add(SizeNavigation);
+
+            var ColorNavigation = $"{nameof(ProductEntity.Variants)}.{nameof(ProductVariantEntity.Color)}"; // ProductEntity.Variant.Size
+            IncludeStrings.Add(ColorNavigation);
         }
     }
 }
