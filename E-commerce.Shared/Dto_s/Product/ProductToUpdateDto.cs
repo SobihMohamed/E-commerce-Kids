@@ -18,15 +18,19 @@ namespace E_commerce.Shared.Dto_s.Product
         public decimal? Price { get; set; }
 
         public IFormFile? MainImageUrl { get; set; }
-
-        public string? TargetAge { get; set; }
-
+        
         public int? CategoryId { get; set; }
-
         public List<int>? DeletedImageIds { get; set; }
-
         public List<IFormFile>? ImageUrls { get; set; }
+        //------------------
 
+
+
+        // color - size - 
+
+        //stock red xl 10 pid=100
+        //stock blue xl 5 pid =100
+        //stock blue l 4 pid 1000
         public List<VariantToUpdateDto>? Variants { get; set; }
     }
 }

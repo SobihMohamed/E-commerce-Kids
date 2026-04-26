@@ -40,8 +40,13 @@ namespace E_commerce.Services.AutoMapper.ProductMapping
                 .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images))
                 .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.Variants));
 
-            CreateMap<ProductToCreateDto, ProductEntity>().ReverseMap();
-            CreateMap<VariantToCreateDto, ProductVariantEntity>().ReverseMap();
+            CreateMap<ProductToUpdateDto, ProductEntity>()
+                .ForMember(dest => dest.Variants, opt => opt.Ignore())
+                .ForMember(dest => dest.Images, opt => opt.Ignore());
+
+            CreateMap<VariantToUpdateDto, ProductVariantEntity>()
+                .ForMember(dest => dest.ColorId, opt => opt.Condition(src => src.ColorId > 0))
+                .ForMember(dest => dest.SizeId, opt => opt.Condition(src => src.SizeId > 0));
         }
     }
 }

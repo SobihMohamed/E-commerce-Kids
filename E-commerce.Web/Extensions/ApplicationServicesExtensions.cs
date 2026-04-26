@@ -7,6 +7,7 @@ using E_commerce.Abstraction.IService.Lookup;
 using E_commerce.Abstraction.IService.Notification;
 using E_commerce.Abstraction.IService.Order;
 using E_commerce.Abstraction.IService.Product;
+using E_commerce.Abstraction.IService.Profile;
 using E_commerce.Abstraction.IService.ShoppingCart;
 using E_commerce.Abstraction.IService.Token;
 using E_commerce.Domain.Contracts.UnitOfWorkPattern;
@@ -25,6 +26,7 @@ using E_commerce.Services.Services.NotificationImplementation;
 using E_commerce.Services.Services.NotificationImplementation.StrategyPattern;
 using E_commerce.Services.Services.OrderImplementation;
 using E_commerce.Services.Services.ProductImplementation;
+using E_commerce.Services.Services.ProfileImplementaion;
 using E_commerce.Services.Services.ShoppingCartImplementation;
 using E_commerce.Services.Services.TokenImplementation;
 using E_commerce.Shared.Common.Dto.Notification.Settings;
@@ -56,6 +58,7 @@ namespace E_commerce.Web.Extensions
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<ILookupService, LookUpService>();
             services.AddScoped<IDesignsService, DesignsServices>();
+            services.AddScoped<IProfileService, ProfileService>();
 
             services.AddTransient(typeof(PictureUrlResolver<,>));
             return services;

@@ -5,6 +5,8 @@ using E_commerce.Domain.Contracts.UnitOfWorkPattern;
 using E_commerce.Domain.Exceptions;
 using E_commerce.Domain.Exceptions.NotFoundModels;
 using E_commerce.Domain.Models.Category;
+using E_commerce.Domain.Models.Product;
+using E_commerce.Services.Specification.Product;
 using E_commerce.Shared.Dto_s.Category;
 using MimeKit.Cryptography;
 using System;
@@ -70,8 +72,17 @@ namespace E_commerce.Services.Services.CategoryImplemetation
         {
             var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
             var Category = await categoryRepo.GetByIdAsync(id);
+
             if (Category == null)
-                throw new CategoryNotFoundException();
+                throw new CategoryNotFoundException(); 
+
+            var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
+            var spec = new ProductsByCategoryIdSpec(id);
+            var hasProducts = await productRepo.GetCountAsync(spec) > 0;
+            if (hasProducts)
+            {
+                throw new BadRequestExceptionCustome("Cannot delete this category because it has associated products.");
+            }
             if (!string.IsNullOrEmpty(Category.PictureUrl))
             {
                 await attachmentService.DeleteImage(Category.PictureUrl);

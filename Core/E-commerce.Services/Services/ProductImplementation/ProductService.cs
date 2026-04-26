@@ -144,7 +144,7 @@ namespace E_commerce.Services.Services.ProductImplementation
         }
         private void HandleProductVariantsUpdate(ProductToUpdateDto productDto, ProductEntity existingProduct)
         {
-            if (productDto.Variants != null && productDto.Variants.Any())
+            if (productDto.Variants != null)
             {
                 var incomingVariantIds = productDto.Variants.Select(v => v.Id).ToList();
                 var existingVariantIds = existingProduct.Variants.Select(v => v.Id).ToList();
@@ -166,7 +166,13 @@ namespace E_commerce.Services.Services.ProductImplementation
                     {
                         var existingVariant = existingProduct.Variants.FirstOrDefault(v => v.Id == variantDto.Id);
                         if (existingVariant != null)
+                        {
+                            // Validate if the incoming ColorId/SizeId is > 0 and valid before mapping (Optional but Recommended)
+                            if (variantDto.ColorId <= 0 || variantDto.SizeId <= 0)
+                                throw new BadRequestExceptionCustome("Invalid Color ID or Size ID provided for the variant.");
+
                             _mapper.Map(variantDto, existingVariant);
+                        }
                     }
                     // if he add blue color in the endpoints of them and then return to product to update his variant to has
                     // blue color and small size we will add new variant because this variant not exist before for this product

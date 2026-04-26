@@ -36,7 +36,7 @@ namespace E_commerce.Presentation.Controllers.Category
         // 3. Create a new category (Admin Only)
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult> CreateCategory([FromBody] CategoryToCreateDto dto)
+        public async Task<ActionResult> CreateCategory([FromForm] CategoryToCreateDto dto)
         {
             var category = await _categoryService.CreateCategoryAsync(dto);
             return Created(category, "Category created successfully");
@@ -45,7 +45,7 @@ namespace E_commerce.Presentation.Controllers.Category
         // 4. Update category (Admin Only)
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateCategory(int id, [FromBody] CategoryToUpdateDto dto)
+        public async Task<ActionResult> UpdateCategory(int id, [FromForm] CategoryToUpdateDto dto)
         {
             var category = await _categoryService.UpdateCategoryAsync(id, dto);
             return Success(category, "Category updated successfully");
