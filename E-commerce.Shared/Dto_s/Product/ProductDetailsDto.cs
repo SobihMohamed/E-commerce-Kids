@@ -12,7 +12,6 @@ namespace E_commerce.Shared.Dto_s.Product
         public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public string MainImageUrl { get; set; } = string.Empty;
-        public string TargetAge { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
 
         public List<ProductImageDto> Images { get; set; } = new();

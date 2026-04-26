@@ -20,9 +20,6 @@ namespace E_commerce.Shared.Dto_s.Product
         [Required(ErrorMessage = "Required main image")]
         public IFormFile MainImageUrl { get; set; } = null!;
 
-        [Required(ErrorMessage = "Target age required like 4 - 6 ")]
-        public string TargetAge { get; set; } = string.Empty;
-
         [Required]
         public int CategoryId { get; set; }
         public List<IFormFile>? ImageUrls { get; set; }

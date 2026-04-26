@@ -10,6 +10,13 @@ namespace E_commerce.Services.AutoMapper.ProductMapping
     {
         public ProductProfile()
         {
+            // 1. Mapping for Create Variant
+            CreateMap<VariantToCreateDto, ProductVariantEntity>();
+
+            CreateMap<ProductToCreateDto, ProductEntity>()
+                .ForMember(dest => dest.MainImageUrl, opt => opt.Ignore())
+                .ForMember(dest => dest.Images, opt => opt.Ignore());
+
             CreateMap<ProductVariantEntity, ProductVariantDto>()
                 .ForMember(dest => dest.VariantId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Size, opt => opt.MapFrom(src => src.Size.Name))
