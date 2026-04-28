@@ -22,5 +22,7 @@ namespace E_commerce.Domain.Models.CustomerInteraction
         // ==========================================
         public int? DesignId { get; set; } // Nullable عشان لو التيشرت سادة
         public virtual DesignsEntity? Design { get; set; }
+
+        public string? CustomizedPreviewUrl { get; set; }
     }
 }

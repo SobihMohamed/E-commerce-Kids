@@ -12,6 +12,7 @@ namespace E_commerce.Services.Specification.Product
     {
         public ProductFiltrationSpec(ProductSpecParams specParams) // search ? true || false
     : base(p =>
+        p.IsBaseGarment == false &&
         // 1. Search where = product.Name Contain(search) AND Where product.categoryid = categoryid
         (string.IsNullOrEmpty(specParams.Search) || p.Name.ToLower().Contains(specParams.Search)) &&
 

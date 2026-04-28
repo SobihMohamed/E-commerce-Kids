@@ -25,7 +25,7 @@ namespace E_commerce.Presentation.Controllers.ShoppingCart
 
         // 2. add item to cart
         [HttpPost("items")]
-        public async Task<ActionResult> AddItemToCart([FromBody] AddToCartDto dto)
+        public async Task<ActionResult> AddItemToCart([FromForm] AddToCartDto dto)
         {
             // to associate the cart item with the user, we need to get the user ID from the token (if the user is logged in)
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

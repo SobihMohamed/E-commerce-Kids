@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using E_commerce.Abstraction.IService.Attachment;
 using E_commerce.Abstraction.IService.ShoppingCart;
 using E_commerce.Domain.Contracts.UnitOfWorkPattern;
 using E_commerce.Domain.Exceptions;
@@ -8,13 +9,10 @@ using E_commerce.Domain.Models.Product;
 using E_commerce.Services.Specification.ShoppingCart;
 using E_commerce.Shared.Dto_s.ShoppingCart.RequestDto;
 using E_commerce.Shared.Dto_s.ShoppingCart.ResponseDto;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace E_commerce.Services.Services.ShoppingCartImplementation
 {
-    public class ShoppingCartService(IUnitOfWork _unitOfWork, IMapper _mapper) : IShoppingCartService
+    public class ShoppingCartService(IUnitOfWork _unitOfWork, IMapper _mapper , IAttachmentService attachmentService) : IShoppingCartService
     {
         public async Task<ShoppingCartDto> GetCartAsync(Guid cartId)
         {
@@ -31,29 +29,48 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             // Return the cart DTO
             return cartDto;
         }
-    
+
         public async Task<ShoppingCartDto> AddItemToCartAsync(AddToCartDto dto, string? userId = null)
         {
             var variant = await ValidateProductStockAsync(dto.ProductVariantId, dto.Quantity);
 
-            Guid targetCartId;
+            var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+            ShoppingCartEntity? existingCart = null;
 
             if (dto.ShoppingCartId.HasValue)
             {
-                targetCartId = await HandleExistingCartAsync(dto, variant, userId);
+                var cartSpec = new GetShoppingCartSpec(dto.ShoppingCartId.Value);
+                existingCart = await cartRepository.GetByIdWithSpecAsync(cartSpec);
+            }
+
+            Guid targetCartId = existingCart != null ? existingCart.Id : Guid.NewGuid();
+
+            string? uploadedImageUrl = null;
+            if (dto.CustomizedPreviewUrl != null)
+            {
+                uploadedImageUrl = await attachmentService.UploadImageAsync(dto.CustomizedPreviewUrl, $"CartItems/{targetCartId}");
+            }
+
+            if (existingCart != null)
+            {
+                await HandleExistingCartWithFoundObjectAsync(existingCart, dto, variant, userId, uploadedImageUrl);
             }
             else
             {
-                targetCartId = await CreateNewCartAsync(dto, userId);
+                await CreateNewCartWithFixedIdAsync(targetCartId, dto, userId, uploadedImageUrl);
             }
 
             var result = await _unitOfWork.SaveChangesAsync();
             if (result <= 0)
+            {
+                if (!string.IsNullOrEmpty(uploadedImageUrl))
+                    await attachmentService.DeleteImage(uploadedImageUrl);
+
                 throw new BadRequestExceptionCustome("Error While adding to cart");
+            }
 
             return await GetCartAsync(targetCartId);
         }
-        
         public async Task<ShoppingCartDto> UpdateItemQuantityAsync(Guid cartId, int cartItemId, UpdateCartItemQuantityDto dto)
         {
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
@@ -96,6 +113,9 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             if (item == null) throw new CartItemNotFound($"Cart Item Not Found");
 
             // 3 - delete
+            if(item.CustomizedPreviewUrl != null)
+                await attachmentService.DeleteImage(item.CustomizedPreviewUrl);
+            
             cart.CartItems.Remove(item);
             cart.UpdatedAt = DateTime.UtcNow;
             cart.LastModifiedBy = cart.UserId;
@@ -136,7 +156,6 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             cartRepository.Delete(oldUserCart);
             currentGuestCart.UserId = userId;
             currentGuestCart.LastModifiedBy = userId;
-            cartRepository.Update(currentGuestCart);
 
             var result = await _unitOfWork.SaveChangesAsync();
             if (result <= 0)
@@ -173,16 +192,14 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             return variant;
         }
-        private async Task<Guid> HandleExistingCartAsync(AddToCartDto dto, ProductVariantEntity variant, string? userId)
+        private async Task HandleExistingCartWithFoundObjectAsync(ShoppingCartEntity cart, AddToCartDto dto, ProductVariantEntity variant, string? userId, string? imageUrl)
         {
-            var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
-            var cartSpec = new GetShoppingCartSpec(dto.ShoppingCartId!.Value);
-            var cart = await cartRepository.GetByIdWithSpecAsync(cartSpec);
-
             if (cart == null)
                 throw new ShoppingCartNotFoundException("Not Found Cart");
 
-            var existingCartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductVariantId == dto.ProductVariantId);
+            var existingCartItem = cart.CartItems.FirstOrDefault(ci =>
+                ci.ProductVariantId == dto.ProductVariantId &&
+                ci.DesignId == dto.DesignId);
 
             if (existingCartItem != null)
             {
@@ -190,30 +207,46 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                     throw new BadRequestExceptionCustome("Total Quantity Not Exist for this proudct");
 
                 existingCartItem.Quantity += dto.Quantity;
+
+                if (!string.IsNullOrEmpty(imageUrl))
+                {
+                    if (!string.IsNullOrEmpty(existingCartItem.CustomizedPreviewUrl))
+                    {
+                        await attachmentService.DeleteImage(existingCartItem.CustomizedPreviewUrl);
+                    }
+                    existingCartItem.CustomizedPreviewUrl = imageUrl;
+                }
             }
             else
             {
-                cart.CartItems.Add(new CartItemEntity
+                var newCartItem = new CartItemEntity
                 {
+                    ShoppingCartId = cart.Id, 
                     ProductVariantId = dto.ProductVariantId,
                     Quantity = dto.Quantity,
+                    DesignId = dto.DesignId,
+                    CustomizedPreviewUrl = imageUrl,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = userId
-                });
+                };
+
+                cart.CartItems.Add(newCartItem);
+
+                var cartItemRepository = _unitOfWork.GetRepository<CartItemEntity, int>();
+                await cartItemRepository.AddAsync(newCartItem);
             }
 
             cart.UpdatedAt = DateTime.UtcNow;
             cart.LastModifiedBy = userId;
 
-            return cart.Id;
         }
-        private async Task<Guid> CreateNewCartAsync(AddToCartDto dto, string? userId)
+        private async Task CreateNewCartWithFixedIdAsync(Guid cartId, AddToCartDto dto, string? userId, string? imageUrl)
         {
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
 
             var newCart = new ShoppingCartEntity
             {
-                Id = Guid.NewGuid(), // database will generate this, but we can set it here for clarity
+                Id = cartId, 
                 UserId = userId,
                 CartItems = new List<CartItemEntity>
                 {
@@ -221,6 +254,8 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                     {
                         ProductVariantId = dto.ProductVariantId,
                         Quantity = dto.Quantity,
+                        DesignId = dto.DesignId,
+                        CustomizedPreviewUrl = imageUrl,
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = userId,
                     }
@@ -229,7 +264,6 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             await cartRepository.AddAsync(newCart);
 
-            return newCart.Id; 
         }
         #endregion
 
@@ -239,17 +273,17 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
         {
             foreach (var oldUserCartItem in oldUserCart.CartItems)
             {
-                var existingUserItem = currentGuestCart.CartItems.FirstOrDefault(o => o.ProductVariantId == oldUserCartItem.ProductVariantId);
+                var existingUserItem = currentGuestCart.CartItems.FirstOrDefault(o =>
+                    o.ProductVariantId == oldUserCartItem.ProductVariantId &&
+                    o.DesignId == oldUserCartItem.DesignId); 
 
                 if (existingUserItem != null)
                 {
                     // total quantity
                     var requestedTotal = existingUserItem.Quantity + oldUserCartItem.Quantity;
-
                     // the maximum available quantity in DB
                     var availableStock = oldUserCartItem.ProductVariant.StockQuantity;
 
-                    // to choice the requestedTotal if < availableStock and choice the availableStock if < requestedTotal
                     existingUserItem.Quantity = Math.Min(requestedTotal, availableStock);
                 }
                 else
@@ -259,13 +293,14 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                     {
                         ProductVariantId = oldUserCartItem.ProductVariantId,
                         Quantity = oldUserCartItem.Quantity,
+                        DesignId = oldUserCartItem.DesignId, 
                         CreatedAt = DateTime.UtcNow,
                         LastModifiedBy = userId,
                         CreatedBy = userId
                     });
                 }
             }
-        }    
+        }
         // hande the empty current user cart
         private async Task<ShoppingCartDto> HandleEmptyGuestCartAsync(string userId)
         {
@@ -277,7 +312,11 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             if (existingCart != null)
                 return await GetCartAsync(existingCart.Id);
 
-            throw new ShoppingCartNotFoundException("No Cart Found");
+            return new ShoppingCartDto
+            {
+                Id = Guid.Empty, 
+                CartItems = new List<CartItemDto>(),
+            };
         }
         // assign the cart to the user and return it
         private async Task AssignCartToUserAsync(ShoppingCartEntity cart, string userId)
@@ -288,7 +327,6 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             cart.LastModifiedBy = userId;
             cart.UpdatedAt = DateTime.UtcNow;
 
-            cartRepository.Update(cart);
             await _unitOfWork.SaveChangesAsync();
         }
         #endregion

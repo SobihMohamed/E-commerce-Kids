@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -19,5 +20,6 @@ namespace E_commerce.Shared.Dto_s.ShoppingCart.RequestDto
         // 🌟 NEW: The chosen design from the Customizer
         // ==========================================
         public int? DesignId { get; set; }
+        public IFormFile? CustomizedPreviewUrl { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace E_commerce.Services.Specification.Product
     {
         public ProductWithFiltersForCountSpec(ProductSpecParams specParams)
             : base(p =>
+                p.IsBaseGarment == false &&
                 (string.IsNullOrEmpty(specParams.Search) || p.Name.ToLower().Contains(specParams.Search.ToLower())) &&
                 (!specParams.CategoryId.HasValue || p.CategoryId == specParams.CategoryId) &&
                 (!specParams.MinPrice.HasValue || p.Price >= specParams.MinPrice) &&

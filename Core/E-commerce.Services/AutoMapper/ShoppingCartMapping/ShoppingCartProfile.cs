@@ -25,18 +25,21 @@ namespace E_commerce.Services.AutoMapper.ShoppingCartMapping
                 .ForMember(dest => dest.DesignId, opt => opt.MapFrom(src => src.DesignId));
 
             CreateMap<CartItemEntity, CartItemDto>()
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductVariant.ProductId))
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductVariant.Product.Name))
                 .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.ProductVariant.Product.Price))
+                .ForMember(dest => dest.ColorName, opt => opt.MapFrom(src => src.ProductVariant.Color.Name))
+                .ForMember(dest => dest.SizeName, opt => opt.MapFrom(src => src.ProductVariant.Size.Name))
+                .ForMember(dest => dest.AvailableStock, opt => opt.MapFrom(src => src.ProductVariant.StockQuantity))
                 // refactor this to use the resolver instead of the map from because we need to get the main image url
                 // from the product and we need to use the resolver to get it because we need to check
                 // if the product has a main image or not if it has a main image we return it if not we return null
-                .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom<PictureUrlResolver<CartItemEntity, CartItemDto>, string>
-                    (src => src.ProductVariant.Product.MainImageUrl))
+                .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom<PictureUrlResolver<CartItemEntity, CartItemDto>, string>(src =>
+                    !string.IsNullOrEmpty(src.CustomizedPreviewUrl)
+                    ? src.CustomizedPreviewUrl               // لو في بريفيو مخصص استخدمه
+                    : src.ProductVariant.Product.MainImageUrl // لو مفيش استخدم صورة المنتج الأصلية
+                ))
 
-                .ForMember(dest => dest.ColorName, opt => opt.MapFrom(src => src.ProductVariant.Color.Name))
-                .ForMember(dest => dest.SizeName, opt => opt.MapFrom(src => src.ProductVariant.Size.Name))
-
-                .ForMember(dest => dest.AvailableStock, opt => opt.MapFrom(src => src.ProductVariant.StockQuantity))
 
                 // NEW: Customization Details Mapping
 

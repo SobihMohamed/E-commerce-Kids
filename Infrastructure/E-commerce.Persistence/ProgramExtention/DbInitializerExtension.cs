@@ -9,7 +9,8 @@ namespace E_commerce.Persistence.Extensions
     {
         public static async Task SeedDatabaseAsync(this IApplicationBuilder app)
         {
-            using (var scope = app.ApplicationServices.CreateScope())
+            // 🌟 التعديل هنا: استخدمنا await using و CreateAsyncScope()
+            await using (var scope = app.ApplicationServices.CreateAsyncScope())
             {
                 var services = scope.ServiceProvider;
                 try

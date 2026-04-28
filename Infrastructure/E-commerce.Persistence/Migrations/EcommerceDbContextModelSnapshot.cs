@@ -132,6 +132,9 @@ namespace E_commerce.Persistence.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CustomizedPreviewUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("DesignId")
                         .HasColumnType("int");
 
@@ -576,6 +579,9 @@ namespace E_commerce.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsBaseGarment")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");

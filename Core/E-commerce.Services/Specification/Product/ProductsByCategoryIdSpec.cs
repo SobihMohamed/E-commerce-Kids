@@ -8,7 +8,8 @@ namespace E_commerce.Services.Specification.Product
 {
     public class ProductsByCategoryIdSpec : BaseSpecifications<ProductEntity,int>
     {
-        public ProductsByCategoryIdSpec(int categoryId):base(p => p.CategoryId == categoryId)
+        public ProductsByCategoryIdSpec(int categoryId)
+            : base(p => p.CategoryId == categoryId && p.IsBaseGarment == false)
         {
             
         }
