@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using E_commerce.Shared.Common.Params.Notification;
-using System.Security.Claims;
+﻿using E_commerce.Abstraction.IService.Notification;
 using E_commerce.Presentation.Controllers;
-using E_commerce.Abstraction.IService.Notification;
+using E_commerce.Shared.Common.Pagination;
+using E_commerce.Shared.Common.Params.Notification;
+using E_commerce.Shared.Common.Responses; 
+using E_commerce.Shared.Dto_s.Notificaiton;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace E_commerce.Web.Controllers.Notification
 {
@@ -16,6 +19,7 @@ namespace E_commerce.Web.Controllers.Notification
 
         // 1. get all notifications for the current user with optional query parameters
         [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<PaginationResponse<NotificationDto>>), 200)]
         public async Task<IActionResult> GetMyNotifications([FromQuery] NotificationQueryParams queryParams)
         {
             var userId = GetUserId();
@@ -26,6 +30,7 @@ namespace E_commerce.Web.Controllers.Notification
 
         // 2. read a specific notification by id
         [HttpPatch("{id:guid}/read")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)] 
         public async Task<IActionResult> MarkAsRead(Guid id)
         {
             var userId = GetUserId();
@@ -36,6 +41,7 @@ namespace E_commerce.Web.Controllers.Notification
 
         // 3. read all notifications
         [HttpPatch("read-all")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)] 
         public async Task<IActionResult> MarkAllAsRead()
         {
             var userId = GetUserId();

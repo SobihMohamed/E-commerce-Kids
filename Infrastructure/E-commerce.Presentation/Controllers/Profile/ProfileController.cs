@@ -1,18 +1,18 @@
 ﻿using E_commerce.Abstraction.IService.Profile;
+using E_commerce.Shared.Common.Responses; 
 using E_commerce.Shared.Dto_s.Profile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
 
 namespace E_commerce.Presentation.Controllers.Profile
 {
     [Authorize]
     public class ProfileController(IProfileService profileService) : AppBaseController
     {
+        // 1. Get User Profile
         [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<UserProfileDto>), 200)]
         public async Task<ActionResult> GetProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -22,7 +22,9 @@ namespace E_commerce.Presentation.Controllers.Profile
             return Success(profile, "Profile retrieved successfully");
         }
 
+        // 2. Update User Profile
         [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<UserProfileDto>), 200)]
         public async Task<ActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

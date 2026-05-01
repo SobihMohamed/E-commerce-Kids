@@ -1,8 +1,11 @@
 ﻿using E_commerce.Abstraction.IService.Lookup;
+using E_commerce.Shared.Common.Responses; // عشان يتعرف على ApiResponse
 using E_commerce.Shared.Dto_s.Lookups.Color;
 using E_commerce.Shared.Dto_s.Lookups.Size;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace E_commerce.Presentation.Controllers.Lookup
 {
@@ -15,7 +18,12 @@ namespace E_commerce.Presentation.Controllers.Lookup
             _lookupService = lookupService;
         }
 
+        // ==========================================
+        // Colors Endpoints
+        // ==========================================
+
         [HttpGet("colors")]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ColorDto>>), 200)]
         public async Task<ActionResult> GetAllColors()
         {
             var colors = await _lookupService.GetAllColorsAsync();
@@ -24,6 +32,7 @@ namespace E_commerce.Presentation.Controllers.Lookup
 
         [Authorize(Roles = "Admin")]
         [HttpPost("colors")]
+        [ProducesResponseType(typeof(ApiResponse<ColorDto>), 201)]
         public async Task<ActionResult> AddColor([FromBody] ColorToCreateDto dto)
         {
             var color = await _lookupService.AddColorAsync(dto);
@@ -32,13 +41,19 @@ namespace E_commerce.Presentation.Controllers.Lookup
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("colors/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)] 
         public async Task<ActionResult> DeleteColor(int id)
         {
             await _lookupService.DeleteColorAsync(id);
             return Success("Color deleted successfully");
         }
 
+        // ==========================================
+        // Sizes Endpoints
+        // ==========================================
+
         [HttpGet("sizes")]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<SizeDto>>), 200)]
         public async Task<ActionResult> GetAllSizes()
         {
             var sizes = await _lookupService.GetAllSizesAsync();
@@ -47,6 +62,7 @@ namespace E_commerce.Presentation.Controllers.Lookup
 
         [Authorize(Roles = "Admin")]
         [HttpPost("sizes")]
+        [ProducesResponseType(typeof(ApiResponse<SizeDto>), 201)] 
         public async Task<ActionResult> AddSize([FromBody] SizeToCreateDto dto)
         {
             var size = await _lookupService.AddSizeAsync(dto);
@@ -55,6 +71,7 @@ namespace E_commerce.Presentation.Controllers.Lookup
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("sizes/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)] 
         public async Task<ActionResult> DeleteSize(int id)
         {
             await _lookupService.DeleteSizeAsync(id);

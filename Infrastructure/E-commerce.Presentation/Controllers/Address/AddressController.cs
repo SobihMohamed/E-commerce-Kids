@@ -1,7 +1,9 @@
 ﻿using E_commerce.Abstraction.IService.Address;
+using E_commerce.Shared.Common.Responses;
 using E_commerce.Shared.Dto_s.Address;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -11,6 +13,7 @@ namespace E_commerce.Presentation.Controllers.Address
     public class AddressController(IAddressService addressService) : AppBaseController
     {
         [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AddressDto>>), 200)]
         public async Task<ActionResult> GetUserAddresses()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -20,6 +23,7 @@ namespace E_commerce.Presentation.Controllers.Address
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), 200)]
         public async Task<ActionResult> GetAddressById(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -29,6 +33,7 @@ namespace E_commerce.Presentation.Controllers.Address
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), 201)] 
         public async Task<ActionResult> AddAddress([FromBody] AddressToSaveDto addressDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -38,6 +43,7 @@ namespace E_commerce.Presentation.Controllers.Address
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), 200)]
         public async Task<ActionResult> UpdateAddress(int id, [FromBody] AddressToSaveDto addressDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -47,6 +53,7 @@ namespace E_commerce.Presentation.Controllers.Address
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)] 
         public async Task<ActionResult> DeleteAddress(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -56,6 +63,7 @@ namespace E_commerce.Presentation.Controllers.Address
         }
 
         [HttpPatch("{id}/set-default")]
+        [ProducesResponseType(typeof(ApiResponse<AddressDto>), 200)]
         public async Task<ActionResult> SetDefaultAddress(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
