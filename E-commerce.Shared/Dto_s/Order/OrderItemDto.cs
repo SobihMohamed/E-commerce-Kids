@@ -18,5 +18,6 @@ namespace E_commerce.Shared.Dto_s.Order
         public string? DesignName { get; set; }
         public decimal CustomizationPrice { get; set; }
         public string? CustomizedDesignUrl { get; set; }
+        public decimal TotalItemPrice => (ProductPrice + CustomizationPrice) * Quantity;
     }
 }

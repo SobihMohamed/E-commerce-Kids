@@ -20,7 +20,7 @@ namespace E_commerce.Domain.Contracts.GenericReposPattern
         Task<TEntity?> GetByIdWithSpecAsync(ISpecifications<TEntity, TKey> specifications); // ? because it may return null if the entities with the specified ids do not exist
 
         Task<int> GetCountAsync(ISpecifications<TEntity, TKey> specifications);
-
+        Task<int> CountAsync();
         Task AddAsync(TEntity entity); 
         void Update(TEntity entity);
         void Delete(TEntity entity);

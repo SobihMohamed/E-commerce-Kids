@@ -2,6 +2,7 @@
 using E_commerce.Abstraction.IService.Attachment;
 using E_commerce.Abstraction.IService.Auth;
 using E_commerce.Abstraction.IService.Category;
+using E_commerce.Abstraction.IService.Dashboard;
 using E_commerce.Abstraction.IService.Designs;
 using E_commerce.Abstraction.IService.Lookup;
 using E_commerce.Abstraction.IService.Notification;
@@ -19,6 +20,7 @@ using E_commerce.Services.Services;
 using E_commerce.Services.Services.AddressImplementaion;
 using E_commerce.Services.Services.AuthImplementation;
 using E_commerce.Services.Services.CategoryImplemetation;
+using E_commerce.Services.Services.DashboardImplementation;
 using E_commerce.Services.Services.DesignImplementation;
 using E_commerce.Services.Services.LookupImplementation;
 using E_commerce.Services.Services.NotificationImplementaion;
@@ -59,6 +61,7 @@ namespace E_commerce.Web.Extensions
             services.AddScoped<ILookupService, LookUpService>();
             services.AddScoped<IDesignsService, DesignsServices>();
             services.AddScoped<IProfileService, ProfileService>();
+            services.AddScoped<IDashboardService, DashboardService>();
 
             services.AddTransient(typeof(PictureUrlResolver<,>));
             return services;

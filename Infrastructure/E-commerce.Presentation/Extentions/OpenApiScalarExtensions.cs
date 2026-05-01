@@ -62,7 +62,6 @@ namespace E_commerce.Presentation.Extentions
 
         public static IEndpointRouteBuilder MapScalarDocumentation(this IEndpointRouteBuilder app)
         {
-            app.MapOpenApi();
 
             app.MapScalarApiReference(options =>
             {

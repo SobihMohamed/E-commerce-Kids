@@ -34,7 +34,6 @@ builder.Services.AddCustomCors(builder.Configuration);
 
 // API Documentation (OpenAPI & Scalar)
 builder.Services.AddOpenApiDocumentation();
-builder.Services.AddOpenApi();
 
 // Controllers & JSON Options
 builder.Services.AddControllers()

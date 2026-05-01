@@ -49,5 +49,7 @@ namespace E_commerce.Persistence.ImplementsContracts.RepoImplementatoin
             var Query = SpecificationEvaluator.GenerateQuery(BaseQuery, specifications);
             return await Query.CountAsync();
         }
+        public async Task<int> CountAsync() => await _dbSet.CountAsync();
+        
     }
 }
