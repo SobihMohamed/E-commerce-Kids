@@ -62,9 +62,17 @@ namespace E_commerce.Web.Middleware
         public async Task HandelExceptionAsync(HttpContext context, Exception ex)
         {
             context.Response.ContentType = "application/json";
+
+            // ==========================================================
+            // 🌟 التعديل هنا: هنجيب تفاصيل الـ Inner Exception الحقيقية
+            // ==========================================================
+            string detailedMessage = ex.InnerException != null
+                ? $"{ex.Message} \n👉 Inner Details: {ex.GetBaseException().Message}"
+                : ex.Message;
+
             // used if server error exception only
             string serverErrorMessage = env.IsDevelopment() ?
-                $"{ex.Message} \n {ex.StackTrace}" : "An unexpected error occurred. Please try again later.";
+                $"{detailedMessage} \n\nStackTrace:\n{ex.StackTrace}" : "An unexpected error occurred. Please try again later.";
 
             // we use pattern matching to determine the type of exception
             // and create an appropriate ApiResponse based on the exception type.

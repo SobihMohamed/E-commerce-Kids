@@ -25,6 +25,7 @@ namespace E_commerce.Persistence.Configurations
             builder.Property(c => c.Description)
                 .HasMaxLength(500); 
 
+
             // define the relationship in ProductEntity
             // builder.HasMany(c => c.Products)
             //        .WithOne(p => p.Category)
