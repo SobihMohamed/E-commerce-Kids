@@ -11,6 +11,8 @@ namespace E_commerce.Services.Specification.Order
         public GetOrdersForUserSpec(string userId)
             :base(o => o.UserId == userId)
         {
+            AddInclude(o => o.User); 
+            AddInclude(o => o.ShippingAddress); 
             AddOrderBy(o => o.CreatedAt ,isDescending:true);
         }
     }

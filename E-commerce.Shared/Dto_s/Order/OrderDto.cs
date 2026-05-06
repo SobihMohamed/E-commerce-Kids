@@ -14,7 +14,8 @@ namespace E_commerce.Shared.Dto_s.Order
         public decimal TotalAmount { get; set; }
         public string OrderStatus { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
-
+        public string FullName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
         public AddressDto ShippingAddress { get; set; } = null!;
         public IReadOnlyList<OrderItemDto> OrderItems { get; set; } = new List<OrderItemDto>();
     }

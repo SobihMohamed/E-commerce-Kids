@@ -10,6 +10,8 @@ namespace E_commerce.Shared.Dto_s.Order
         public string OrderNumber { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
         public string OrderStatus { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
 }

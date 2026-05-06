@@ -6,13 +6,13 @@ using System.Text;
 
 namespace E_commerce.Services.Specification.Order
 {
-    public class GetOrderByIdForAdminSpec : BaseSpecifications<OrderEntity, Guid>
+    public class OrderWithAllDetailsSpec : BaseSpecifications<OrderEntity, Guid>
     {
-        public GetOrderByIdForAdminSpec(Guid orderId)
-            : base(o => o.Id == orderId)
+        public OrderWithAllDetailsSpec(Guid orderId) : base(o => o.Id == orderId)
         {
             AddInclude(o => o.OrderItems);
             AddInclude(o => o.ShippingAddress);
+            AddInclude(o => o.User);
         }
     }
 }

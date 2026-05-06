@@ -10,6 +10,8 @@ using E_commerce.Domain.Models.Product;
 using E_commerce.Domain.Models.User;
 using E_commerce.Services.Specification.Order;
 using E_commerce.Services.Specification.ShoppingCart;
+using E_commerce.Shared.Common.Pagination;
+using E_commerce.Shared.Common.Params.Order;
 using E_commerce.Shared.Dto_s.Order;
 using E_commerce.Shared.EnumsHelper.Order;
 using Microsoft.AspNetCore.Identity;
@@ -97,14 +99,20 @@ namespace E_commerce.Services.Services.OrderImplementation
         private async Task<OrderDto> SaveOrderInDb(OrderEntity order)
         {
             var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+
             await orderRepo.AddAsync(order);
             var res = await unitOfWork.SaveChangesAsync();
-            //var errors = res.Errors.Select(e => e.Description); ;
-            if(res <= 0) throw new BadRequestExceptionCustome("Failed to create order");
-            return mapper.Map<OrderDto>(order);
+
+            if (res <= 0)
+                throw new BadRequestExceptionCustome("Failed to create order");
+
+            var spec = new OrderWithAllDetailsSpec(order.Id);
+            var completeOrder = await orderRepo.GetByIdWithSpecAsync(spec);
+
+            return mapper.Map<OrderDto>(completeOrder);
         }
         #endregion
-        
+
         public async Task<IReadOnlyList<OrderSummaryDto>> GetOrdersForUserAsync(string userId)
         {
             // 1- get order repository
@@ -117,8 +125,6 @@ namespace E_commerce.Services.Services.OrderImplementation
             // 3 - map the orders to order dto
             return mapper.Map<IReadOnlyList<OrderSummaryDto>>(orders);
         }
-
-        
 
         public async Task<OrderDto> GetOrderByIdForUserAsync(Guid orderId, string userId)
         {
@@ -140,7 +146,7 @@ namespace E_commerce.Services.Services.OrderImplementation
         {
             var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
 
-            var spec = new GetOrderByIdForAdminSpec(orderId);
+            var spec = new AdminOrderByIdSpec(orderId);
             var order = await orderRepo.GetByIdWithSpecAsync(spec);
 
             if (order == null)
@@ -156,6 +162,49 @@ namespace E_commerce.Services.Services.OrderImplementation
 
             await NotifyOnOrderStatusUpdateAsync(order);
 
+            return mapper.Map<OrderDto>(order);
+        }
+
+        public async Task<PaginationResponse<OrderSummaryDto>> GetAllOrdersForAdminAsync(AdminOrderParams specParams)
+        {
+            var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+
+            // 1. Data Spec with filtering and pagination
+            var spec = new AdminOrdersSpec(specParams);
+            var orders = await orderRepo.GetAllWithSpecAsync(spec);
+
+            // 2. Count Spec to get total items matching the filters
+            var countSpec = new AdminOrderCountSpec(specParams);
+            var totalItems = await orderRepo.GetCountAsync(countSpec);
+
+            // 3. Mapping
+            var mappedOrders = mapper.Map<IReadOnlyList<OrderSummaryDto>>(orders);
+
+            // 4. Return Paginated Response
+            return new PaginationResponse<OrderSummaryDto>(
+                specParams.PageIndex,
+                specParams.PageSize,
+                totalItems,
+                mappedOrders
+            );
+        }
+
+        public async Task<OrderDto> GetOrderByIdForAdminAsync(Guid orderId)
+        {
+            // 1 - Get order repository
+            var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+
+            // 2 - Create the specification
+            var spec = new AdminOrderByIdSpec(orderId);
+
+            // 3 - Get the order from the database
+            var order = await orderRepo.GetByIdWithSpecAsync(spec);
+
+            // 4 - Check if order exists
+            if (order == null)
+                throw new NotFoundExceptionCustome($"Order with ID {orderId} not found.");
+
+            // 5 - Map and return
             return mapper.Map<OrderDto>(order);
         }
     }

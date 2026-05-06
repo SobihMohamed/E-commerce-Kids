@@ -23,10 +23,14 @@ namespace E_commerce.Services.AutoMapper.OrderMapping
             CreateMap<OrderEntity, OrderDto>()
                 .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()))
                 .ForMember(dest => dest.ShippingAddress, opt => opt.MapFrom(src => src.ShippingAddress))
-                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems));
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.ShippingAddress.PhoneNumber))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName));
 
             CreateMap<OrderEntity, OrderSummaryDto>()
-                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()));
+                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.ShippingAddress.PhoneNumber))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FullName));
         }
     }
 }

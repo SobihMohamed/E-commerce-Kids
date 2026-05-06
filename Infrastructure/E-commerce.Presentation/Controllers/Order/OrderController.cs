@@ -1,4 +1,6 @@
 ﻿using E_commerce.Abstraction.IService.Order;
+using E_commerce.Shared.Common.Pagination;
+using E_commerce.Shared.Common.Params.Order;
 using E_commerce.Shared.Common.Responses;
 using E_commerce.Shared.Dto_s.Order;
 using Microsoft.AspNetCore.Authorization;
@@ -56,6 +58,26 @@ namespace E_commerce.Presentation.Controllers.Order
         {
             var updatedOrder = await orderService.UpdateOrderStatusAsync(id, statusDto);
             return Success(updatedOrder, "Order status has been updated successfully.");
+        }
+
+        // 5. Get All Orders for Admin (Paginated & Filtered)
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin")]
+        [ProducesResponseType(typeof(ApiResponse<PaginationResponse<OrderSummaryDto>>), 200)]
+        public async Task<ActionResult> GetAllOrdersForAdminAsync([FromQuery] AdminOrderParams specParams)
+        {
+            var orders = await orderService.GetAllOrdersForAdminAsync(specParams);
+            return Success(orders, "Orders retrieved successfully.");
+        }
+
+        // 6. Get Order Details for Admin
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<OrderDto>), 200)]
+        public async Task<ActionResult> GetOrderByIdForAdminAsync(Guid id)
+        {
+            var order = await orderService.GetOrderByIdForAdminAsync(id);
+            return Success(order, "Order details retrieved successfully.");
         }
     }
 }
