@@ -6,7 +6,7 @@ namespace E_commerce.Shared.EnumsHelper.Product
 {
     public enum TargetGender
     {
-        Male = 0,
-        Female = 1,
+        Boy = 0,
+        Girl = 1,
     }
 }

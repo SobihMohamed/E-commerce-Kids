@@ -5,10 +5,11 @@ using E_commerce.Persistence.E_commerceDbContext;
 using E_commerce.Persistence.Seeds;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace E_commerce.Persistence.Implements.InitializerImplement
 {
-    public class DbInitialized(IUnitOfWork unitOfWork, EcommerceDbContext ecommerceDbContext , UserManager<ApplicationUser> userManager , RoleManager<IdentityRole> roleManager) : IDbInitializer
+    public class DbInitialized(IUnitOfWork unitOfWork , IConfiguration configuration, EcommerceDbContext ecommerceDbContext , UserManager<ApplicationUser> userManager , RoleManager<IdentityRole> roleManager) : IDbInitializer
     {
         public async Task DataSeedAsync()
         {
@@ -24,8 +25,8 @@ namespace E_commerce.Persistence.Implements.InitializerImplement
                 throw;
             }
             await SeederAsync.SeedRolesAsync(roleManager);
-            await SeederAsync.SeedAdminUserAsync(userManager);
-            await SeederAsync.SeedBaseGarmentAsync(unitOfWork);
+            await SeederAsync.SeedAdminUserAsync(userManager , configuration);
+            await SeederAsync.SeedBaseGarmentsAsync(unitOfWork);
         }
     }
 }

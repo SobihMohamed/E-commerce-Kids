@@ -1,11 +1,14 @@
 ﻿using E_commerce.Domain.Contracts.UnitOfWorkPattern;
+using E_commerce.Domain.Exceptions;
 using E_commerce.Domain.Models.Category;
 using E_commerce.Domain.Models.Lookup;
 using E_commerce.Domain.Models.Product;
 using E_commerce.Domain.Models.User;
-using E_commerce.Persistence.E_commerceDbContext;
+using E_commerce.Shared.EnumsHelper.Product; // تأكد من مسار Enum الـ TargetGender
 using E_commerce.Shared.EnumsHelper.User;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+
 namespace E_commerce.Persistence.Seeds
 {
     public static class SeederAsync
@@ -20,150 +23,135 @@ namespace E_commerce.Persistence.Seeds
                 }
             }
         }
-        public static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager)
-        {
-            string adminEmail = "admin@softbridge.com";
 
-            // ensure existence of admin
+        public static async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager, IConfiguration config)
+        {
+            string adminEmail = config["AdminSettings:Email"];
+            string adminPassword = config["AdminSettings:Password"];
+            if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminPassword))
+            {
+                throw new InvalidOperationException("Admin email or password is not configured in appsettings.json. Please provide valid credentials.");
+            }
+
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
             {
                 var newAdmin = new ApplicationUser
                 {
-                    UserName = adminEmail.ToUpper(),
+                    UserName = adminEmail,
                     Email = adminEmail,
                     FullName = "System Admin",
                     UserType = UserType.Admin,
                     EmailConfirmed = true
                 };
 
-                // create admin
-                var result = await userManager.CreateAsync(newAdmin, "Admin@123456");
+                var result = await userManager.CreateAsync(newAdmin, adminPassword);
 
-                // if created 
                 if (result.Succeeded)
-                {
-
                     await userManager.AddToRoleAsync(newAdmin, UserType.Admin.ToString());
-                }
             }
         }
-        public static async Task SeedBaseGarmentAsync(IUnitOfWork unitOfWork)
+
+        public static async Task SeedBaseGarmentsAsync(IUnitOfWork unitOfWork)
         {
-            // 1. استدعاء الـ Repositories اللي هنحتاجها
             var productRepo = unitOfWork.GetRepository<ProductEntity, int>();
             var categoryRepo = unitOfWork.GetRepository<CategoryEntity, int>();
             var sizeRepo = unitOfWork.GetRepository<SizeEntity, int>();
             var colorRepo = unitOfWork.GetRepository<ColorEntity, int>();
-            var variantRepo = unitOfWork.GetRepository<ProductVariantEntity, int>();
 
-            // 2. هل التيشرت الأساسي موجود؟
-            var allProducts = await productRepo.GetAllAsync();
-            var baseProduct = allProducts.FirstOrDefault(p => p.IsBaseGarment);
+            // ==========================================
+            // 1. Seeding للأقسام (Categories)
+            // ==========================================
+            var allCategories = await categoryRepo.GetAllAsync();
 
-            if (baseProduct == null)
+            var boyCategory = allCategories.FirstOrDefault(c => c.Title == "Boys Customization");
+            if (boyCategory == null)
             {
-                // محتاجين Category
-                var allCategories = await categoryRepo.GetAllAsync();
-                var category = allCategories.FirstOrDefault();
+                boyCategory = new CategoryEntity { Title = "Boys Customization",IsBaseGarment=true, Description = "Base garments for boys customization" };
+                await categoryRepo.AddAsync(boyCategory);
+                await unitOfWork.SaveChangesAsync(); 
+            }
 
-                if (category == null)
-                {
-                    category = new CategoryEntity
-                    {
-                        Title = "System Default",
-                        Description = "Hidden category for system items"
-                    };
-                    await categoryRepo.AddAsync(category);
-                    await unitOfWork.SaveChangesAsync(); // عشان ناخد الـ Id
-                }
-
-                // إنشاء التيشرت الأساسي
-                baseProduct = new ProductEntity
-                {
-                    Name = "Radiant Kids Blank Tee",
-                    Description = "The base garment used for the Customizer Design Studio.",
-                    Price = 150.00m,
-                    CategoryId = category.Id,
-                    IsBaseGarment = true,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                await productRepo.AddAsync(baseProduct);
+            var girlCategory = allCategories.FirstOrDefault(c => c.Title == "Girls Customization");
+            if (girlCategory == null)
+            {
+                girlCategory = new CategoryEntity { Title = "Girls Customization", IsBaseGarment=true, Description = "Base garments for girls customization" };
+                await categoryRepo.AddAsync(girlCategory);
                 await unitOfWork.SaveChangesAsync();
             }
 
             // ==========================================
-            // 💡 Seeding للمقاسات
+            // 2. Seeding للمقاسات (Sizes)
             // ==========================================
-            var sizesList = new List<string> { "XS", "S", "M", "L", "XL" };
-            var dbSizes = new List<SizeEntity>();
+            var sizesList = new List<string> { "4", "6", "8", "10", "12" };
             var existingSizes = await sizeRepo.GetAllAsync();
 
             foreach (var sizeName in sizesList)
             {
-                var size = existingSizes.FirstOrDefault(s => s.Name == sizeName);
-                if (size == null)
+                if (!existingSizes.Any(s => s.Name == sizeName))
                 {
-                    size = new SizeEntity { Name = sizeName };
-                    await sizeRepo.AddAsync(size);
-                    await unitOfWork.SaveChangesAsync();
+                    await sizeRepo.AddAsync(new SizeEntity { Name = sizeName });
                 }
-                dbSizes.Add(size);
             }
+            await unitOfWork.SaveChangesAsync();
 
             // ==========================================
-            // 💡 Seeding للألوان
+            // 3. Seeding للألوان (Colors)
             // ==========================================
             var colorsList = new List<(string Name, string HexCode)>
             {
-                ("White", "#FFFFFF"),
                 ("Black", "#000000"),
-                ("Navy Blue", "#000080"),
-                ("Red", "#FF0000"),
-                ("Yellow", "#FFFF00")
+                ("White", "#FFFFFF"), 
+                ("Soft Blue", "#739BCB"),
+                ("Dusty Purple", "#9A74A8"),
+                ("Bright Yellow", "#F5D400")
             };
-            var dbColors = new List<ColorEntity>();
             var existingColors = await colorRepo.GetAllAsync();
 
             foreach (var colorData in colorsList)
             {
-                var color = existingColors.FirstOrDefault(c => c.Name == colorData.Name);
-                if (color == null)
+                if (!existingColors.Any(c => c.Name == colorData.Name))
                 {
-                    color = new ColorEntity { Name = colorData.Name, HexCode = colorData.HexCode };
-                    await colorRepo.AddAsync(color);
-                    await unitOfWork.SaveChangesAsync();
+                    await colorRepo.AddAsync(new ColorEntity { Name = colorData.Name, HexCode = colorData.HexCode });
                 }
-                dbColors.Add(color);
             }
+            await unitOfWork.SaveChangesAsync();
 
             // ==========================================
-            // 💡 إنشاء الـ Variants المدمجة
+            // 4. Seeding للمنتجات الأساسية (Base Garments)
             // ==========================================
-            var allVariants = await variantRepo.GetAllAsync();
-            var existingVariantsCount = allVariants.Count(v => v.ProductId == baseProduct.Id);
+            var allProducts = await productRepo.GetAllAsync();
 
-            if (existingVariantsCount == 0)
+            // التيشرت الولادي
+            if (!allProducts.Any(p => p.IsBaseGarment && p.TargetGender == TargetGender.Boy))
             {
-                // هنستخدم AddAsync جوه اللوب ونسيف مرة واحدة في الآخر (أفضل للـ Performance)
-                foreach (var color in dbColors)
+                await productRepo.AddAsync(new ProductEntity
                 {
-                    foreach (var size in dbSizes)
-                    {
-                        await variantRepo.AddAsync(new ProductVariantEntity
-                        {
-                            ProductId = baseProduct.Id,
-                            ColorId = color.Id,
-                            SizeId = size.Id,
-                            StockQuantity = 1000
-                        });
-                    }
-                }
-
-                await unitOfWork.SaveChangesAsync();
+                    Name = "Boys Customizable Blank Tee",
+                    Description = "The base garment used for the Boys Customizer Design Studio.",
+                    Price = 10m,
+                    CategoryId = boyCategory.Id,
+                    TargetGender = TargetGender.Boy,
+                    IsBaseGarment = true
+                });
             }
+
+            // التيشرت البناتي
+            if (!allProducts.Any(p => p.IsBaseGarment && p.TargetGender == TargetGender.Girl))
+            {
+                await productRepo.AddAsync(new ProductEntity
+                {
+                    Name = "Girls Customizable Blank Tee",
+                    Description = "The base garment used for the Girls Customizer Design Studio.",
+                    Price = 10m,
+                    CategoryId = girlCategory.Id,
+                    TargetGender = TargetGender.Girl,
+                    IsBaseGarment = true
+                });
+            }
+
+            await unitOfWork.SaveChangesAsync();
         }
     }
 }
