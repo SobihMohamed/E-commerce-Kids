@@ -14,5 +14,6 @@ namespace E_commerce.Shared.Common.Params.Product
         public decimal? MaxPrice { get; set; }
 
         public ProductArranges? Sort { get; set; }
+        public bool? IsBaseGarment { get; set; }
     }
 }

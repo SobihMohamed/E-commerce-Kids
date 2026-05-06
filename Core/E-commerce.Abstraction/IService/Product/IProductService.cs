@@ -10,8 +10,7 @@ namespace E_commerce.Abstraction.IService.Product
     public interface IProductService
     {
         Task<PaginationResponse<ProductDto>> GetAllProductsAsync(ProductSpecParams specParams);
-        Task<ProductDetailsDto> GetProductDetailsByIdAsync(int id);
-
+        Task<ProductDetailsDto> GetProductDetailsByIdAsync(int id, bool? isBaseGarment = null);
         Task<ProductDetailsDto> CreateProductAsync(ProductToCreateDto productDto);
         Task<ProductDetailsDto> UpdateProductAsync(int id, ProductToUpdateDto productDto);
         Task<bool> DeleteProductAsync(int id);

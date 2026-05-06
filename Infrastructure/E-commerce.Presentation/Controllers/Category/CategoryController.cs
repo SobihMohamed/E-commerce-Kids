@@ -24,12 +24,30 @@ namespace E_commerce.Presentation.Controllers.Category
             return Success(categories, "Categories retrieved successfully");
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/all")]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<CategoryDto>>), 200)]
+        public async Task<ActionResult> GetAllCategoriesForAdmin()
+        {
+            var categories = await _categoryService.GetAllCategoriesForAdminAsync();
+            return Success(categories, "Categories retrieved successfully");
+        
+        }
         // 2. Get Category By ID (Public)
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<CategoryDto>), 200)]
         public async Task<ActionResult> GetCategory(int id)
         {
             var category = await _categoryService.GetCategoryByIdAsync(id);
+            return Success(category, "Category retrieved successfully");
+        }
+        // 2.5 Get Category By ID For Admin (Admin - بيجيب أي قسم سواء عادي أو خام)
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<CategoryDto>), 200)]
+        public async Task<ActionResult> GetCategoryForAdmin(int id)
+        {
+            var category = await _categoryService.GetCategoryByIdForAdminAsync(id);
             return Success(category, "Category retrieved successfully");
         }
 

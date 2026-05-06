@@ -48,6 +48,7 @@ namespace E_commerce.Services.AutoMapper.ProductMapping
     ;
             CreateMap<ProductToUpdateDto, ProductEntity>()
                 .ForMember(dest => dest.Variants, opt => opt.Ignore())
+                .ForMember(dest => dest.MainImageUrl, opt => opt.Ignore())
                 .ForMember(dest => dest.Images, opt => opt.Ignore());
 
             CreateMap<VariantToUpdateDto, ProductVariantEntity>()

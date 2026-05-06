@@ -39,19 +39,16 @@ namespace E_commerce.Services.Services.ProductImplementation
                 mappedProducts
             );
         }
-        public async Task<ProductDetailsDto> GetProductDetailsByIdAsync(int id)
+        public async Task<ProductDetailsDto> GetProductDetailsByIdAsync(int id, bool? isBaseGarment = null)
         {
             var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
 
-            // 1.create spec to get the product with all related data (category, images, variants, reviews)
-            var spec = new ProductByIdSpec(id);
+            var spec = new ProductByIdSpec(id, isBaseGarment);
 
-            // 2 get the product using the spec
             var product = await productRepo.GetByIdWithSpecAsync(spec);
             if (product == null)
                 throw new NotFoundExceptionCustome($"Product with ID {id} not found.");
 
-            //Mapping
             return _mapper.Map<ProductDetailsDto>(product);
         }
         public async Task<ProductDetailsDto> CreateProductAsync(ProductToCreateDto productDto)
@@ -154,8 +151,9 @@ namespace E_commerce.Services.Services.ProductImplementation
                 // indicating they should be deleted
                 var variantsToDelete = existingProduct.Variants.Where(ev => !incomingVariantIds.Contains(ev.Id)).ToList();
                 // delete the variants
+                var variantRepo = _unitOfWork.GetRepository<ProductVariantEntity, int>();
                 foreach (var variants in variantsToDelete)
-                    existingProduct.Variants.Remove(variants);
+                    variantRepo.Delete(variants); 
             }
             // update or add variants
             // product variants mean productColor + productSize + productStock

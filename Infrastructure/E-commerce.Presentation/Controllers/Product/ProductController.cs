@@ -22,17 +22,34 @@ namespace E_commerce.Presentation.Controllers.Product
         [ProducesResponseType(typeof(ApiResponse<PaginationResponse<ProductDto>>), 200)]
         public async Task<ActionResult> GetAllProducts([FromQuery] ProductSpecParams specParams)
         {
+            specParams.IsBaseGarment = false;
             var products = await _productService.GetAllProductsAsync(specParams);
-            return Success(products, "Products get successfully");
+            return Success(products, "Products retrieved successfully");
         }
 
-        // 2. get product details by id
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/all")]
+        public async Task<ActionResult> GetAllProductsForAdmin([FromQuery] ProductSpecParams specParams)
+        {
+            var products = await _productService.GetAllProductsAsync(specParams);
+            return Success(products, "Products retrieved successfully");
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<ProductDetailsDto>), 200)]
         public async Task<ActionResult> GetProductDetails(int id)
         {
+            var product = await _productService.GetProductDetailsByIdAsync(id, isBaseGarment: false);
+            return Success(product, "Product details retrieved successfully");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/{id}")]
+        [ProducesResponseType(typeof(ApiResponse<ProductDetailsDto>), 200)]
+        public async Task<ActionResult> GetProductDetailsForAdmin(int id)
+        {
             var product = await _productService.GetProductDetailsByIdAsync(id);
-            return Success(product, "product details get successfully");
+            return Success(product, "Product details retrieved successfully");
         }
 
         // 3. create product

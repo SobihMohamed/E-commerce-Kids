@@ -13,5 +13,7 @@ namespace E_commerce.Abstraction.IService.Category
         Task<CategoryDto> CreateCategoryAsync(CategoryToCreateDto categoryDto);
         Task<CategoryDto> UpdateCategoryAsync(int id ,CategoryToUpdateDto categoryDto);
         Task<bool> DeleteCategoryAsync(int id);
+        Task<IReadOnlyList<CategoryDto>> GetAllCategoriesForAdminAsync();
+        Task<CategoryDto> GetCategoryByIdForAdminAsync(int id);
     }
 }

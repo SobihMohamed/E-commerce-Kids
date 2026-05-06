@@ -58,8 +58,7 @@ namespace E_commerce.Services.Services.CategoryImplemetation
         {
             var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
 
-            var spec = new RegularCategorySpec(id);
-            var category = await categoryRepo.GetByIdWithSpecAsync(spec);
+            var category = await categoryRepo.GetByIdAsync(id);
 
             if (category == null)
                 throw new CategoryNotFoundException();
@@ -75,7 +74,6 @@ namespace E_commerce.Services.Services.CategoryImplemetation
 
             return _mapper.Map<CategoryDto>(category);
         }
-
         public async Task<bool> DeleteCategoryAsync(int id)
         {
             var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
@@ -101,6 +99,28 @@ namespace E_commerce.Services.Services.CategoryImplemetation
             categoryRepo.Delete(category);
             var result = await _unitOfWork.SaveChangesAsync();
             return result > 0;
+        }
+
+        public async Task<IReadOnlyList<CategoryDto>> GetAllCategoriesForAdminAsync()
+        {
+            var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
+            var categories = await categoryRepo.GetAllAsync();
+            if(categories == null || !categories.Any())
+                throw new CategoryNotFoundException();
+            return _mapper.Map<IReadOnlyList<CategoryDto>>(categories);
+        }
+
+        public async Task<CategoryDto> GetCategoryByIdForAdminAsync(int id)
+        {
+            var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
+
+            var category = await categoryRepo.GetByIdAsync(id);
+
+            if (category == null)
+                throw new CategoryNotFoundException();
+
+            var mappedCategory = _mapper.Map<CategoryDto>(category);
+            return mappedCategory;
         }
     }
 }
