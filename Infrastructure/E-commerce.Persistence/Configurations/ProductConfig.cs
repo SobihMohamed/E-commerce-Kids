@@ -26,6 +26,8 @@ namespace E_commerce.Persistence.Configurations
                 .HasColumnType("decimal(18,2)");
             builder.Property(p => p.MainImageUrl)
                 .HasMaxLength(500);
+            builder.Property(p => p.TargetGender)
+                .HasConversion<string>();
 
 
             builder.HasOne(p => p.Category)

@@ -13,6 +13,7 @@ namespace E_commerce.Services.Specification.Product
             : base(p =>
                 (!specParams.IsBaseGarment.HasValue || p.IsBaseGarment == specParams.IsBaseGarment.Value) &&
                 (string.IsNullOrEmpty(specParams.Search) || p.Name.ToLower().Contains(specParams.Search.ToLower())) &&
+                (!specParams.Gender.HasValue || p.TargetGender == specParams.Gender) &&
                 (!specParams.CategoryId.HasValue || p.CategoryId == specParams.CategoryId) &&
                 (!specParams.MinPrice.HasValue || p.Price >= specParams.MinPrice) &&
                 (!specParams.MaxPrice.HasValue || p.Price <= specParams.MaxPrice) &&

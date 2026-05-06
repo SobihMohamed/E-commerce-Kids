@@ -13,10 +13,10 @@ namespace E_commerce.Shared.Dto_s.Product
         public string Name { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public string MainImageUrl { get; set; } = string.Empty;
-        public string CategoryName { get; set; } = string.Empty; 
-        // font make it as circles 
-        //public List<ColorDto> AvailableColor { get; set; } = new();
-        //public List<SizeDto> AvailableSize{ get; set; } = new();
+        public string CategoryName { get; set; } = string.Empty;
+
+        public string TargetGender { get; set; } = string.Empty;
+        public bool IsBaseGarment { get; set; }
         public List<ProductVariantDto> Variants { get; set; } = new();
     }
 }

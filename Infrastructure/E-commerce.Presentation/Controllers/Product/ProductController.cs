@@ -3,6 +3,7 @@ using E_commerce.Shared.Common.Pagination;
 using E_commerce.Shared.Common.Params.Product;
 using E_commerce.Shared.Common.Responses; 
 using E_commerce.Shared.Dto_s.Product;
+using E_commerce.Shared.EnumsHelper.Product;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -70,6 +71,14 @@ namespace E_commerce.Presentation.Controllers.Product
         {
             var product = await _productService.UpdateProductAsync(id, dto);
             return Success(product, "Product Updated Successfully");
+        }
+
+        [HttpGet("customization-product/{gender}")]
+        [ProducesResponseType(typeof(ApiResponse<ProductDetailsDto>), 200)]
+        public async Task<ActionResult> GetCustomizationProductAsync(TargetGender gender)
+        {
+            var product = await _productService.GetCustomizationProductAsync(gender);
+            return Success(product, "Customization base garment retrieved successfully.");
         }
 
         // 5. delete product

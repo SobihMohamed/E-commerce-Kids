@@ -145,12 +145,31 @@ namespace E_commerce.Services.Services.OrderImplementation
         public async Task<OrderDto> UpdateOrderStatusAsync(Guid orderId, UpdateOrderStatusDto Dto)
         {
             var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+            var variantRepo = unitOfWork.GetRepository<ProductVariantEntity, int>();
 
             var spec = new AdminOrderByIdSpec(orderId);
             var order = await orderRepo.GetByIdWithSpecAsync(spec);
 
             if (order == null)
                 throw new OrderNotFoundException($"Order not found.");
+
+            // if new status is the same as the current status, we don't need to update
+            if (order.OrderStatus == Dto.NewStatus)
+                throw new BadRequestExceptionCustome("Cannot update status to the same value.");
+
+            // if the new status is cancelled, we need to update the stock quantity of the product variants in the order items
+            if (Dto.NewStatus == OrderStatus.Cancelled )
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    var variant = await variantRepo.GetByIdAsync(item.ProductVariantId);
+                    if (variant != null)
+                    {
+                        variant.StockQuantity += item.Quantity; 
+                        variantRepo.Update(variant);
+                    }
+                }
+            }
 
             order.OrderStatus = Dto.NewStatus;
 

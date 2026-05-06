@@ -19,6 +19,8 @@ namespace E_commerce.Services.Specification.Product
         // 2. Category T & F 
         (!specParams.CategoryId.HasValue || p.CategoryId == specParams.CategoryId) &&
 
+        (!specParams.Gender.HasValue || p.TargetGender == specParams.Gender) &&
+
         // 3. Price t & f
         (!specParams.MinPrice.HasValue || p.Price >= specParams.MinPrice) && // price > 500
         (!specParams.MaxPrice.HasValue || p.Price <= specParams.MaxPrice) && // price  < 1000

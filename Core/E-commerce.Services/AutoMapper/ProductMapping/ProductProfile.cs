@@ -31,8 +31,9 @@ namespace E_commerce.Services.AutoMapper.ProductMapping
 
             CreateMap<ProductEntity, ProductDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Title))
-                .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom<PictureUrlResolver<ProductEntity, ProductDto>, string>(src => src.MainImageUrl));
-
+                .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom<PictureUrlResolver<ProductEntity, ProductDto>, string>(src => src.MainImageUrl))
+                .ForMember(dest => dest.TargetGender, opt => opt.MapFrom(src => src.TargetGender.ToString()));
+            
             CreateMap<ProductImageEntity, ProductImageDto>()
                 .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom<PictureUrlResolver<ProductImageEntity, ProductImageDto>, string>(src => src.ImageUrl));
 
@@ -42,10 +43,8 @@ namespace E_commerce.Services.AutoMapper.ProductMapping
             CreateMap<ProductEntity, ProductDetailsDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Title))
                 .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom<PictureUrlResolver<ProductEntity, ProductDetailsDto>, string>(src => src.MainImageUrl))
-                // he learn from the previous mapping how to map the collection of images and
-                // use Url resolver for each image in the collection,
-                // so we can just map the collection of images without needing to specify the resolver again.
-    ;
+                .ForMember(dest => dest.TargetGender, opt => opt.MapFrom(src => src.TargetGender.ToString()));
+              
             CreateMap<ProductToUpdateDto, ProductEntity>()
                 .ForMember(dest => dest.Variants, opt => opt.Ignore())
                 .ForMember(dest => dest.MainImageUrl, opt => opt.Ignore())

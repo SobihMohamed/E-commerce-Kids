@@ -14,6 +14,9 @@ namespace E_commerce.Shared.Dto_s.Product
         public string MainImageUrl { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
 
+        public string TargetGender { get; set; } = string.Empty;
+        public bool IsBaseGarment { get; set; }
+
         public List<ProductImageDto> Images { get; set; } = new();
         public List<ProductVariantDto> Variants { get; set; } = new();
     }

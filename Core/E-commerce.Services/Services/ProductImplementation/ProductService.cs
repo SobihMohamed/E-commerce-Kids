@@ -8,6 +8,7 @@ using E_commerce.Services.Specification.Product;
 using E_commerce.Shared.Common.Pagination;
 using E_commerce.Shared.Common.Params.Product;
 using E_commerce.Shared.Dto_s.Product;
+using E_commerce.Shared.EnumsHelper.Product;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -117,6 +118,19 @@ namespace E_commerce.Services.Services.ProductImplementation
 
             return await GetProductDetailsByIdAsync(existingProduct.Id);
         }
+        public async Task<ProductDetailsDto> GetCustomizationProductAsync(TargetGender gender)
+        {
+            var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
+
+            var spec = new BaseGarmentByGenderSpec(gender);
+
+            var product = await productRepo.GetByIdWithSpecAsync(spec);
+
+            if (product == null)
+                throw new NotFoundExceptionCustome($"No base customization garment found for gender: {gender}");
+
+            return _mapper.Map<ProductDetailsDto>(product);
+        }
         public async Task<bool> DeleteProductAsync(int id)
         {
             var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
@@ -125,6 +139,9 @@ namespace E_commerce.Services.Services.ProductImplementation
 
             if (existingProduct != null)
             {
+                if (existingProduct.IsBaseGarment)
+                    throw new BadRequestExceptionCustome("Cannot delete a base customization garment. You can only manage its variants.");
+
                 if (!string.IsNullOrEmpty(existingProduct.MainImageUrl))
                     await attachmentService.DeleteImage(existingProduct.MainImageUrl);
 

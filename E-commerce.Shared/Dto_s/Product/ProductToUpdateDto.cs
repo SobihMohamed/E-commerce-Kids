@@ -1,4 +1,5 @@
 ﻿using E_commerce.Shared.Dto_s.Product.Variant;
+using E_commerce.Shared.EnumsHelper.Product;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -21,6 +22,9 @@ namespace E_commerce.Shared.Dto_s.Product
 
         [Required(ErrorMessage = "Category is required")]
         public int CategoryId { get; set; }
+
+        [Required(ErrorMessage = "Target Gender is required")]
+        public TargetGender TargetGender { get; set; } 
 
         public IFormFile? MainImageUrl { get; set; }
 
