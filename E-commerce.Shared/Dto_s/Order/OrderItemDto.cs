@@ -10,7 +10,9 @@ namespace E_commerce.Shared.Dto_s.Order
         public string ProductName { get; set; } = string.Empty;
         public decimal ProductPrice { get; set; }
         public int Quantity { get; set; }
-
+        public string ColorName { get; set; } = string.Empty;
+        public string SizeName { get; set; } = string.Empty;
+        public string? CustomizedPreviewUrl { get; set; }
         // ==========================================
         //  NEW: Customization Details
         // ==========================================

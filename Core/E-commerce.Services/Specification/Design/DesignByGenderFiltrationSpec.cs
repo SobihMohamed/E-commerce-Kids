@@ -10,7 +10,11 @@ namespace E_commerce.Services.Specification.Design
     public class DesignByGenderFiltrationSpec : BaseSpecifications<DesignsEntity, int>
     {
         public DesignByGenderFiltrationSpec(DesignGender? designGender)
-        : base(d => !designGender.HasValue || d.DesignGender == designGender)
+            : base(d => (d.IsDeleted == false) &&
+                (!designGender.HasValue ||
+
+                (d.DesignGender == designGender || d.DesignGender == DesignGender.both))
+            )
         {
         }
     }

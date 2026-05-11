@@ -68,7 +68,12 @@ namespace E_commerce.Persistence.Seeds
             var boyCategory = allCategories.FirstOrDefault(c => c.Title == "Boys Customization");
             if (boyCategory == null)
             {
-                boyCategory = new CategoryEntity { Title = "Boys Customization",IsBaseGarment=true, Description = "Base garments for boys customization" };
+                boyCategory = new CategoryEntity { 
+                    Title = "Boys Customization",
+                    IsBaseGarment=true,
+                    Description = "Base garments for boys customization", 
+                    PictureUrl = "uploads/Customization/Boy.png"
+                };
                 await categoryRepo.AddAsync(boyCategory);
                 await unitOfWork.SaveChangesAsync(); 
             }
@@ -76,7 +81,13 @@ namespace E_commerce.Persistence.Seeds
             var girlCategory = allCategories.FirstOrDefault(c => c.Title == "Girls Customization");
             if (girlCategory == null)
             {
-                girlCategory = new CategoryEntity { Title = "Girls Customization", IsBaseGarment=true, Description = "Base garments for girls customization" };
+                girlCategory = new CategoryEntity
+                {
+                    Title = "Girls Customization",
+                    IsBaseGarment = true,
+                    Description = "Base garments for girls customization",
+                    PictureUrl = "uploads/Customization/Girl.png"
+                };
                 await categoryRepo.AddAsync(girlCategory);
                 await unitOfWork.SaveChangesAsync();
             }
@@ -130,6 +141,7 @@ namespace E_commerce.Persistence.Seeds
                 {
                     Name = "Boys Customizable Blank Tee",
                     Description = "The base garment used for the Boys Customizer Design Studio.",
+                    MainImageUrl = "uploads/Customization/Boy.png",
                     Price = 10m,
                     CategoryId = boyCategory.Id,
                     TargetGender = TargetGender.Boy,
@@ -145,6 +157,7 @@ namespace E_commerce.Persistence.Seeds
                     Name = "Girls Customizable Blank Tee",
                     Description = "The base garment used for the Girls Customizer Design Studio.",
                     Price = 10m,
+                    MainImageUrl = "uploads/Customization/Girl.png",
                     CategoryId = girlCategory.Id,
                     TargetGender = TargetGender.Girl,
                     IsBaseGarment = true

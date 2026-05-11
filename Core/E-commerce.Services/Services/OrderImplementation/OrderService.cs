@@ -23,24 +23,27 @@ namespace E_commerce.Services.Services.OrderImplementation
         INotificationService notificationService,
         UserManager<ApplicationUser> userManager) : IOrderService
     {
-        public async Task<OrderDto> CreateOrderAsync(string userId, OrderToCreateDto orderDto) // orderDto contains the shipping address id
+        public async Task<OrderDto> CreateOrderAsync(string userId, OrderToCreateDto orderDto)
         {
             // 1 - check if user has items in cart
             var shoppingCartRepo = unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
             var shoppingSpec = new GetShoppingCartByUserIdSpec(userId);
             var shoppingCart = await shoppingCartRepo.GetByIdWithSpecAsync(shoppingSpec);
-            if (shoppingCart == null || !shoppingCart.CartItems.Any()) throw new ShoppingCartNotFoundException("Cart Not Found");
 
-            // 2 - chcek if the product variant exist in the database and update the stock quantity
-            await checkProductVariantandUpdateDb(shoppingCart);
+            if (shoppingCart == null || !shoppingCart.CartItems.Any())
+                throw new ShoppingCartNotFoundException("Cart Not Found");
+
+            CheckProductVariantAndUpdateStockInMemory(shoppingCart);
+
             // 3 - convert the cart items to order items
             var orderItems = ConvertCartItemToOrder(shoppingCart);
-            // 4 - calculate the order subtotal
+
+            // 4 - calculate the order subtotal 
             var subTotal = orderItems.Sum(x => (x.ProductPrice + x.CustomizationPrice) * x.Quantity);
-            var shippingFee = 10; // for example
+            var shippingFee = 10m; // for example
 
             // 5 - create the order entity
-            var OrderEntity = new OrderEntity
+            var orderEntity = new OrderEntity
             {
                 OrderNumber = $"ORD-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
                 UserId = userId,
@@ -51,56 +54,87 @@ namespace E_commerce.Services.Services.OrderImplementation
                 OrderStatus = OrderStatus.Pending,
                 OrderItems = orderItems
             };
-            // 6 - save the order to the database
-            var savedOrderDto = await SaveOrderInDb(OrderEntity);
-            await NotifyOnOrderCreationAsync(OrderEntity);
+
+            var savedOrderDto = await SaveOrderAndClearCartItemsInDb(orderEntity, shoppingCart);
+
+            await NotifyOnOrderCreationAsync(orderEntity);
 
             return savedOrderDto;
         }
+
         #region Helper Methods in CreateOrderAsync
-        private async Task checkProductVariantandUpdateDb(ShoppingCartEntity shoppingCart)
+
+        private void CheckProductVariantAndUpdateStockInMemory(ShoppingCartEntity shoppingCart)
         {
-            var productVariantRepo = unitOfWork.GetRepository<ProductVariantEntity, int>();
-            // loop through the cart items and check if the product variant exist in the database
             foreach (var item in shoppingCart.CartItems)
             {
-                var dbProductVariant = await productVariantRepo.GetByIdAsync(item.ProductVariantId);
-                if(dbProductVariant == null) 
-                    throw new ProductVariantNotFound($"Product not found");
-                if(dbProductVariant.StockQuantity < item.Quantity)
-                    throw new ProductVariantNotFound($"Product {item.ProductVariant.Product.Name} with color {item.ProductVariant.Color?.Name} and size {item.ProductVariant.Size?.Name} has only {dbProductVariant.StockQuantity} items in stock");
-                dbProductVariant.StockQuantity -= item.Quantity; // reduce the stock quantity by the ordered quantity
-                
-                productVariantRepo.Update(dbProductVariant); // update the product variant in the database
+                if (item.ProductVariant == null)
+                    throw new NotFoundExceptionCustome("Product details not loaded.");
+
+                if (item.ProductVariant.StockQuantity < item.Quantity)
+                    throw new BadRequestExceptionCustome(
+                        $"المنتج '{item.ProductVariant.Product.Name}' غير متوفر بالكمية المطلوبة. المتاح ({item.ProductVariant.StockQuantity}) فقط.");
+
+                item.ProductVariant.StockQuantity -= item.Quantity;
             }
         }
+
         private List<OrderItemEntity> ConvertCartItemToOrder(ShoppingCartEntity shoppingCart)
         {
-            // 1- create the order items list
-            var OrderItems = new List<OrderItemEntity>();
-            // 2 - loop through the cart items and create the order items
+            var orderItems = new List<OrderItemEntity>();
             foreach (var item in shoppingCart.CartItems)
             {
-                OrderItems.Add(new OrderItemEntity
+                orderItems.Add(new OrderItemEntity
                 {
                     ProductVariantId = item.ProductVariantId,
                     ProductName = item.ProductVariant.Product.Name,
                     ProductPrice = item.ProductVariant.Product.Price,
                     Quantity = item.Quantity,
-                    //NEW: Customization Details Snapshot
+                    ColorName = item.ProductVariant.Color?.Name ?? "N/A",
+                    SizeName = item.ProductVariant.Size?.Name ?? "N/A",
+                    // if no customized preview url, use the main image of the product as a fallback
+                    CustomizedPreviewUrl = !string.IsNullOrEmpty(item.CustomizedPreviewUrl)
+                        ? item.CustomizedPreviewUrl
+                        : item.ProductVariant.Product.MainImageUrl,
+
                     DesignId = item.DesignId,
                     DesignName = item.Design?.Name,
                     CustomizedDesignUrl = item.Design?.ImageUrl,
                     CustomizationPrice = item.DesignId.HasValue ? 15.0m : 0m
                 });
             }
-            return OrderItems;
+            return orderItems;
         }
-        private async Task<OrderDto> SaveOrderInDb(OrderEntity order)
+        // function to save the order and clear the cart items in the same transaction
+        private async Task<OrderDto> SaveOrderAndClearCartItemsInDb(OrderEntity order, ShoppingCartEntity shoppingCart)
         {
             var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
+            var cartItemRepo = unitOfWork.GetRepository<CartItemEntity, int>();
+
+            // 👇 1. ضفنا الـ Repo الخاص بالمخزون
+            var variantRepo = unitOfWork.GetRepository<ProductVariantEntity, int>();
 
             await orderRepo.AddAsync(order);
+
+            var itemsToDelete = shoppingCart.CartItems.ToList();
+            foreach (var item in itemsToDelete)
+            {
+                if (item.ProductVariant != null)
+                {
+                    item.ProductVariant.Product = null;
+                    item.ProductVariant.Color = null;
+                    item.ProductVariant.Size = null;
+
+                    variantRepo.Update(item.ProductVariant);
+                }
+
+                item.ProductVariant = null;
+                item.ShoppingCart = null;
+                item.Design = null;
+
+                cartItemRepo.Delete(item);
+            }
+
             var res = await unitOfWork.SaveChangesAsync();
 
             if (res <= 0)
@@ -112,7 +146,6 @@ namespace E_commerce.Services.Services.OrderImplementation
             return mapper.Map<OrderDto>(completeOrder);
         }
         #endregion
-
         public async Task<IReadOnlyList<OrderSummaryDto>> GetOrdersForUserAsync(string userId)
         {
             // 1- get order repository

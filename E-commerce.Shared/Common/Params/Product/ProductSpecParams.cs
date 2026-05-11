@@ -13,7 +13,7 @@ namespace E_commerce.Shared.Common.Params.Product
         public int? SizeId { get; set; }
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
-
+        public bool? IsActive { get; set; } = true;
         public ProductArranges? Sort { get; set; }
         public bool? IsBaseGarment { get; set; }
     }

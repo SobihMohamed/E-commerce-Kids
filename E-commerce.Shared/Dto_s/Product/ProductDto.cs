@@ -14,7 +14,7 @@ namespace E_commerce.Shared.Dto_s.Product
         public decimal Price { get; set; }
         public string MainImageUrl { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
-
+        public bool IsActive { get; set; }
         public string TargetGender { get; set; } = string.Empty;
         public bool IsBaseGarment { get; set; }
         public List<ProductVariantDto> Variants { get; set; } = new();

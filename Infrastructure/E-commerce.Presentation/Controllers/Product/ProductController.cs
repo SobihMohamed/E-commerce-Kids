@@ -24,6 +24,7 @@ namespace E_commerce.Presentation.Controllers.Product
         public async Task<ActionResult> GetAllProducts([FromQuery] ProductSpecParams specParams)
         {
             specParams.IsBaseGarment = false;
+            specParams.IsActive = true;
             var products = await _productService.GetAllProductsAsync(specParams);
             return Success(products, "Products retrieved successfully");
         }
@@ -32,6 +33,7 @@ namespace E_commerce.Presentation.Controllers.Product
         [HttpGet("admin/all")]
         public async Task<ActionResult> GetAllProductsForAdmin([FromQuery] ProductSpecParams specParams)
         {
+            specParams.IsActive = null; // Admin can see both active and inactive products
             var products = await _productService.GetAllProductsAsync(specParams);
             return Success(products, "Products retrieved successfully");
         }
@@ -94,6 +96,21 @@ namespace E_commerce.Presentation.Controllers.Product
                 return BadRequestError("Error While Deleting the product");
 
             return Success("Product Deleted successfully");
+        }
+
+        // 6. toggle product activity status (Active / Inactive)
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id}/toggle-status")]
+        [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+        [ProducesResponseType(typeof(ApiResponse<object>), 400)]
+        public async Task<ActionResult> ToggleProductStatus(int id)
+        {
+            var result = await _productService.ToggleProductActivityAsync(id);
+
+            if (!result)
+                return BadRequestError("Error while toggling product status. Product may not exist.");
+
+            return Success("Product status toggled successfully.");
         }
     }
 }

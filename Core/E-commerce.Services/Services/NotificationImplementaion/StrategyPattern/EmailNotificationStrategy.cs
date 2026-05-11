@@ -1,60 +1,51 @@
-﻿using Microsoft.Extensions.Options;
-using MimeKit;
-using MailKit.Security;
-using MailKit.Net.Smtp;
-using E_commerce.Abstraction.IService.Notification;
+﻿using E_commerce.Abstraction.IService.Notification;
 using E_commerce.Shared.Common.Dto.Notification.Settings;
-using E_commerce.Shared.EnumsHelper.Notification;
 using E_commerce.Shared.Dto_s.Notificaiton;
+using E_commerce.Shared.EnumsHelper.Notification;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Logging; // 👈 تأكد من وجود ده
+using Microsoft.Extensions.Options;
+using MimeKit;
+using System;
+using System.Threading.Tasks;
 
-namespace E_commerce.Services.Services.NotificationImplementation.StrategyPattern
+public class EmailNotificationStrategy(
+    IOptions<EmailSettingsDto> emailSettings,
+    ILogger<EmailNotificationStrategy> logger) : INotificationStrategy 
 {
-    public class EmailNotificationStrategy(IOptions<EmailSettingsDto> emailSettings) : INotificationStrategy
+    private readonly EmailSettingsDto _emailSettings = emailSettings.Value;
+    public NotificationType Type => NotificationType.Email;
+
+    public async Task DeliverAsync(NotificationContentDto ContentDto)
     {
-        private readonly EmailSettingsDto _emailSettings = emailSettings.Value;
-        public NotificationType Type => NotificationType.Email;
+        if (string.IsNullOrWhiteSpace(ContentDto.Email))
+            return;
 
-        public async Task DeliverAsync(NotificationContentDto ContentDto)
+        var emailMessage = new MimeMessage();
+        emailMessage.From.Add(new MailboxAddress("Kids-Ecommerce", _emailSettings.Email));
+        emailMessage.To.Add(new MailboxAddress("", ContentDto.Email));
+        emailMessage.Subject = ContentDto.Subject;
+        emailMessage.Body = new TextPart("plain") { Text = ContentDto.Body };
+
+        using var client = new SmtpClient();
+        try
         {
-            if (string.IsNullOrWhiteSpace(ContentDto.Email))
-                return;
+            await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(_emailSettings.Email, _emailSettings.Password);
+            await client.SendAsync(emailMessage);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "⚠️ فشل إرسال البريد الإلكتروني إلى {Email}. السبب: {Message}", ContentDto.Email, ex.Message);
 
-            // 1. prepare message
-            var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("Kids-Ecommerce", _emailSettings.Email));
-
-            // 2. for design body
-            emailMessage.To.Add(new MailboxAddress("", ContentDto.Email));
-
-            // 3. for design subject
-            emailMessage.Subject = ContentDto.Subject;
-
-            // 4. for design body
-            emailMessage.Body = new TextPart("plain")
+            return;
+        }
+        finally
+        {
+            if (client.IsConnected)
             {
-                Text = ContentDto.Body
-            };
-
-            // 5. send emails
-            using var client = new SmtpClient();
-            try
-            {
-                // Connect to the SMTP server
-                await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.StartTls);
-
-                // Authenticate with the email server
-                await client.AuthenticateAsync(_emailSettings.Email, _emailSettings.Password);
-
-                // Send the email
-                await client.SendAsync(emailMessage);
-            }
-            finally
-            {
-                // close connections
-                if (client.IsConnected)
-                {
-                    await client.DisconnectAsync(true);
-                }
+                await client.DisconnectAsync(true);
             }
         }
     }

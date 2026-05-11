@@ -6,13 +6,13 @@ using E_commerce.Domain.Models.CustomerInteraction;
 using E_commerce.Domain.Models.Designs;
 using E_commerce.Domain.Models.Order;
 using E_commerce.Domain.Models.Product;
+using E_commerce.Domain.Models.User;
 using E_commerce.Services.Specification.Dashboard;
 using E_commerce.Shared.Common.Params.Dashboard;
 using E_commerce.Shared.Dto_s.Dashboard;
 using E_commerce.Shared.EnumsHelper.Order;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using E_commerce.Shared.EnumsHelper.User;
+using Microsoft.AspNetCore.Identity;
 
 namespace E_commerce.Services.Services.DashboardImplementation
 {
@@ -20,11 +20,16 @@ namespace E_commerce.Services.Services.DashboardImplementation
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public DashboardService(IUnitOfWork unitOfWork, IMapper mapper)
+        public DashboardService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            UserManager<ApplicationUser> userManager)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         public async Task<DashboardOverviewDto> GetDashboardOverviewAsync(DashboardParams dashboardParams)
@@ -39,11 +44,13 @@ namespace E_commerce.Services.Services.DashboardImplementation
             var cartRepo = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
             var orderRepo = _unitOfWork.GetRepository<OrderEntity, Guid>();
             var designRepo = _unitOfWork.GetRepository<DesignsEntity, int>();
-
-            // استخدام الدالة الجديدة اللي عملناها
+            var customers = await _userManager.GetUsersInRoleAsync(UserType.Customer.ToString());
+            
+            overviewDto.Counters.TotalUsers = customers.Count;
             overviewDto.Counters.TotalProducts = await productRepo.CountAsync();
             overviewDto.Counters.TotalCategories = await categoryRepo.CountAsync();
-            overviewDto.Counters.TotalActiveCarts = await cartRepo.CountAsync();
+            var activeCartsSpec = new ActiveCartsWithItemsSpec();
+            overviewDto.Counters.TotalActiveCarts = await cartRepo.GetCountAsync(activeCartsSpec);
             overviewDto.Counters.TotalDesigns = await designRepo.CountAsync();
             overviewDto.Counters.TotalOrders = await orderRepo.CountAsync();
 

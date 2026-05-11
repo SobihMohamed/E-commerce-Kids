@@ -1,20 +1,18 @@
 ﻿using AutoMapper;
 using E_commerce.Abstraction.IService.Lookup;
 using E_commerce.Domain.Contracts.UnitOfWorkPattern;
+using E_commerce.Domain.Exceptions; 
 using E_commerce.Domain.Models.Lookup;
 using E_commerce.Shared.Dto_s.Lookups.Color;
 using E_commerce.Shared.Dto_s.Lookups.Size;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace E_commerce.Services.Services.LookupImplementation
 {
-    public class LookUpService(IUnitOfWork unitOfWork ,IMapper mapper) : ILookupService
+    public class LookUpService(IUnitOfWork unitOfWork, IMapper mapper) : ILookupService
     {
-        // ==========================================
+        // ==========================================================
         // 1. Colors Methods
-        // ==========================================
+        // ==========================================================
         public async Task<IReadOnlyList<ColorDto>> GetAllColorsAsync()
         {
             var colors = await unitOfWork.GetRepository<ColorEntity, int>().GetAllAsync();
@@ -23,14 +21,11 @@ namespace E_commerce.Services.Services.LookupImplementation
 
         public async Task<ColorDto> AddColorAsync(ColorToCreateDto colorToCreate)
         {
-            // Map DTO to Entity
             var colorEntity = mapper.Map<ColorEntity>(colorToCreate);
 
-            // Add to Database
             await unitOfWork.GetRepository<ColorEntity, int>().AddAsync(colorEntity);
-            await unitOfWork.SaveChangesAsync(); // Save Changes
+            await unitOfWork.SaveChangesAsync();
 
-            // Return the newly created entity mapped back to Dto (Now it has an ID)
             return mapper.Map<ColorDto>(colorEntity);
         }
 
@@ -40,13 +35,22 @@ namespace E_commerce.Services.Services.LookupImplementation
             if (colorEntity != null)
             {
                 unitOfWork.GetRepository<ColorEntity, int>().Delete(colorEntity);
-                await unitOfWork.SaveChangesAsync();
+
+                try
+                {
+                    await unitOfWork.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw new BadRequestExceptionCustome(
+                        "لا يمكن حذف هذا اللون لأنه مستخدم بالفعل في بعض المنتجات المتاحة بالنظام.");
+                }
             }
         }
 
-        // ==========================================
+        // ==========================================================
         // 2. Sizes Methods
-        // ==========================================
+        // ==========================================================
         public async Task<IReadOnlyList<SizeDto>> GetAllSizesAsync()
         {
             var sizes = await unitOfWork.GetRepository<SizeEntity, int>().GetAllAsync();
@@ -69,7 +73,16 @@ namespace E_commerce.Services.Services.LookupImplementation
             if (sizeEntity != null)
             {
                 unitOfWork.GetRepository<SizeEntity, int>().Delete(sizeEntity);
-                await unitOfWork.SaveChangesAsync();
+
+                try
+                {
+                    await unitOfWork.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw new BadRequestExceptionCustome(
+                        "لا يمكن حذف هذا المقاس لأنه مستخدم بالفعل في بعض المنتجات المتاحة بالنظام.");
+                }
             }
         }
     }

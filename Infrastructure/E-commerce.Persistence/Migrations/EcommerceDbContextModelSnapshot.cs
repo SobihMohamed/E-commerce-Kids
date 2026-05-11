@@ -506,6 +506,10 @@ namespace E_commerce.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ColorName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -516,6 +520,9 @@ namespace E_commerce.Persistence.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CustomizedDesignUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomizedPreviewUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("DesignId")
@@ -546,6 +553,10 @@ namespace E_commerce.Persistence.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("SizeName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -582,6 +593,9 @@ namespace E_commerce.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsBaseGarment")
                         .HasColumnType("bit");
@@ -935,7 +949,8 @@ namespace E_commerce.Persistence.Migrations
                 {
                     b.HasOne("E_commerce.Domain.Models.Designs.DesignsEntity", "Design")
                         .WithMany()
-                        .HasForeignKey("DesignId");
+                        .HasForeignKey("DesignId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("E_commerce.Domain.Models.Product.ProductVariantEntity", "ProductVariant")
                         .WithMany()
@@ -1034,7 +1049,8 @@ namespace E_commerce.Persistence.Migrations
                 {
                     b.HasOne("E_commerce.Domain.Models.Designs.DesignsEntity", "Design")
                         .WithMany()
-                        .HasForeignKey("DesignId");
+                        .HasForeignKey("DesignId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("E_commerce.Domain.Models.Order.OrderEntity", "Order")
                         .WithMany("OrderItems")

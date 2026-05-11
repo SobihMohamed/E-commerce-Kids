@@ -8,7 +8,6 @@ namespace E_commerce.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CartItemEntity> builder)
         {
-
             builder.ToTable("CartItems");
             builder.HasKey(c => c.Id);
             builder.Property(c => c.Quantity).IsRequired();
@@ -23,6 +22,13 @@ namespace E_commerce.Persistence.Configurations
                 .HasForeignKey(c => c.ProductVariantId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // ==========================================================
+            // 🌟 التعديل الجديد: مسح العنصر من السلة لو الديزاين اتلغى
+            // ==========================================================
+            builder.HasOne(c => c.Design)
+                .WithMany()
+                .HasForeignKey(c => c.DesignId)
+                .OnDelete(DeleteBehavior.Cascade); // 👈 مسح من السلة النشطة
         }
     }
 }

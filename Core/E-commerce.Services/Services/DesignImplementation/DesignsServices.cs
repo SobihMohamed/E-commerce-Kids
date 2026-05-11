@@ -46,10 +46,14 @@ namespace E_commerce.Services.Services.DesignImplementation
             var designEntity = await repo.GetByIdAsync(id);
             if (designEntity == null) return false;
 
-            var imageDeleted = await _attachmentService.DeleteImage(designEntity.ImageUrl);
-
+            // 1. مسح الديزاين نهائياً من الداتابيز
             repo.Delete(designEntity);
             var result = await _unitOfWork.SaveChangesAsync();
+
+            // 🚨 تنبيه هام جداً بخصوص ملف الصورة:
+            // لا تقم باستدعاء _attachmentService.DeleteImage(designEntity.ImageUrl) هنا!
+            // اترك ملف الصورة موجوداً في مجلد uploads على السيرفر، لأن الفواتير القديمة
+            // لا تزال تحتاج هذا الرابط لعرض صورة الديزاين للعميل والأدمن في الـ History.
 
             return result > 0;
         }

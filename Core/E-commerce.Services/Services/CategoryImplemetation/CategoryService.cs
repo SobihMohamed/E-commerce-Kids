@@ -57,16 +57,25 @@ namespace E_commerce.Services.Services.CategoryImplemetation
         public async Task<CategoryDto> UpdateCategoryAsync(int id, CategoryToUpdateDto categoryDto)
         {
             var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
-
             var category = await categoryRepo.GetByIdAsync(id);
 
             if (category == null)
                 throw new CategoryNotFoundException();
 
+            if (categoryDto.PictureUrl != null) 
+            {
+                if (!string.IsNullOrEmpty(category.PictureUrl))
+                    await attachmentService.DeleteImage(category.PictureUrl);
+
+                category.PictureUrl = await attachmentService.UploadImageAsync(categoryDto.PictureUrl, "categories/images");
+            }
+           
+
             _mapper.Map(categoryDto, category);
 
-            categoryRepo.Update(category);
+            category.Products = null;
 
+            categoryRepo.Update(category);
             var result = await _unitOfWork.SaveChangesAsync();
 
             if (result <= 0)
@@ -77,7 +86,6 @@ namespace E_commerce.Services.Services.CategoryImplemetation
         public async Task<bool> DeleteCategoryAsync(int id)
         {
             var categoryRepo = _unitOfWork.GetRepository<CategoryEntity, int>();
-
             var category = await categoryRepo.GetByIdAsync(id);
 
             if (category == null)
@@ -87,18 +95,24 @@ namespace E_commerce.Services.Services.CategoryImplemetation
                 throw new BadRequestExceptionCustome("Cannot delete this category because it is a core Base Garment category for customizations.");
 
             var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
-            var spec = new ProductsByCategoryIdSpec(id);
+            var spec = new ProductsByCategoryIdSpec(id); 
             var hasProducts = await productRepo.GetCountAsync(spec) > 0;
 
             if (hasProducts)
-                throw new BadRequestExceptionCustome("Cannot delete this category because it has associated products.");
-
-            if (!string.IsNullOrEmpty(category.PictureUrl))
-                await attachmentService.DeleteImage(category.PictureUrl);
+                throw new BadRequestExceptionCustome("لا يمكن حذف هذا القسم لأنه يحتوي على منتجات مرتبطة به. قم بنقل أو حذف المنتجات أولاً.");
 
             categoryRepo.Delete(category);
             var result = await _unitOfWork.SaveChangesAsync();
-            return result > 0;
+
+            if (result > 0)
+            {
+                if (!string.IsNullOrEmpty(category.PictureUrl))
+                    await attachmentService.DeleteImage(category.PictureUrl);
+
+                return true;
+            }
+
+            return false;
         }
 
         public async Task<IReadOnlyList<CategoryDto>> GetAllCategoriesForAdminAsync()

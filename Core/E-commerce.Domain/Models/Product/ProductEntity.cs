@@ -12,6 +12,7 @@ namespace E_commerce.Domain.Models.Product
         public string MainImageUrl { get; set; } = string.Empty;
         public decimal Price { get; set; } // +200 - 200
         public TargetGender TargetGender { get; set;  }
+        public bool IsActive { get; set; } = true;
 
         // if true then this product is a base garment, and it will be used to create variants (like size, color, etc.)
         public bool IsBaseGarment { get; set; } = false;

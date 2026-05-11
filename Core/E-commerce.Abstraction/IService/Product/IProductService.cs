@@ -16,5 +16,6 @@ namespace E_commerce.Abstraction.IService.Product
         Task<ProductDetailsDto> UpdateProductAsync(int id, ProductToUpdateDto productDto);
         Task<ProductDetailsDto> GetCustomizationProductAsync(TargetGender gender);
         Task<bool> DeleteProductAsync(int id);
+        Task<bool> ToggleProductActivityAsync(int id);
     }
 }

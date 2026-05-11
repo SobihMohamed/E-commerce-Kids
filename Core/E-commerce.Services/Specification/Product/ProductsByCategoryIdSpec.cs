@@ -6,12 +6,13 @@ using System.Text;
 
 namespace E_commerce.Services.Specification.Product
 {
-    public class ProductsByCategoryIdSpec : BaseSpecifications<ProductEntity,int>
+    public class ProductsByCategoryIdSpec : BaseSpecifications<ProductEntity, int>
     {
-        public ProductsByCategoryIdSpec(int categoryId)
-            : base(p => p.CategoryId == categoryId)
+        public ProductsByCategoryIdSpec(int categoryId )
+            : base(p => p.CategoryId == categoryId )
         {
-            
+            AddInclude(p => p.Images);
+            AddInclude(p => p.Variants);
         }
     }
 }

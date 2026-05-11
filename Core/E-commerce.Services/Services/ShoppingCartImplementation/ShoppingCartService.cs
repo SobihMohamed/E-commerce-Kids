@@ -32,12 +32,18 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
         public async Task<ShoppingCartDto> AddItemToCartAsync(AddToCartDto dto, string? userId = null)
         {
+            
             var variant = await ValidateProductStockAsync(dto.ProductVariantId, dto.Quantity);
 
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
             ShoppingCartEntity? existingCart = null;
 
-            if (dto.ShoppingCartId.HasValue)
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var cartSpec = new GetShoppingCartByUserIdSpec(userId);
+                existingCart = await cartRepository.GetByIdWithSpecAsync(cartSpec);
+            }
+            else if (dto.ShoppingCartId.HasValue)
             {
                 var cartSpec = new GetShoppingCartSpec(dto.ShoppingCartId.Value);
                 existingCart = await cartRepository.GetByIdWithSpecAsync(cartSpec);
@@ -45,18 +51,49 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
 
             Guid targetCartId = existingCart != null ? existingCart.Id : Guid.NewGuid();
 
-            string? uploadedImageUrl = null;
-            if (dto.CustomizedPreviewUrl != null)
-            {
-                uploadedImageUrl = await attachmentService.UploadImageAsync(dto.CustomizedPreviewUrl, $"CartItems/{targetCartId}");
-            }
+            CartItemEntity? existingCartItem = null;
 
             if (existingCart != null)
             {
+                existingCartItem = existingCart.CartItems.FirstOrDefault(i =>
+                    i.ProductVariantId == dto.ProductVariantId &&
+                    i.DesignId == dto.DesignId);
+
+                if (existingCartItem != null)
+                {
+                    int totalRequestedQuantity = existingCartItem.Quantity + dto.Quantity;
+                    if (variant.StockQuantity < totalRequestedQuantity)
+                    {
+                        throw new BadRequestExceptionCustome(
+                            $"الكمية الإجمالية المطلوبة ({totalRequestedQuantity}) تتعدى المخزن المتاح ({variant.StockQuantity})");
+                    }
+                }
+            }
+
+            string? uploadedImageUrl = null;
+
+            if (existingCart != null && existingCartItem != null)
+            {
+                existingCartItem.Quantity += dto.Quantity;
+                existingCart.UpdatedAt = DateTime.UtcNow;
+                existingCart.LastModifiedBy = userId;
+                existingCartItem.ProductVariant = null;
+
+                var cartItemRepo = _unitOfWork.GetRepository<CartItemEntity, int>();
+                cartItemRepo.Update(existingCartItem);
+            }
+            else if (existingCart != null && existingCartItem == null)
+            {
+                if (dto.CustomizedPreviewUrl != null)
+                    uploadedImageUrl = await attachmentService.UploadImageAsync(dto.CustomizedPreviewUrl, $"CartItems/{targetCartId}");
+
                 await HandleExistingCartWithFoundObjectAsync(existingCart, dto, variant, userId, uploadedImageUrl);
             }
             else
             {
+                if (dto.CustomizedPreviewUrl != null)
+                    uploadedImageUrl = await attachmentService.UploadImageAsync(dto.CustomizedPreviewUrl, $"CartItems/{targetCartId}");
+
                 await CreateNewCartWithFixedIdAsync(targetCartId, dto, userId, uploadedImageUrl);
             }
 
@@ -66,7 +103,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                 if (!string.IsNullOrEmpty(uploadedImageUrl))
                     await attachmentService.DeleteImage(uploadedImageUrl);
 
-                throw new BadRequestExceptionCustome("Error While adding to cart");
+                throw new BadRequestExceptionCustome("حدث خطأ أثناء حفظ البيانات في السلة.");
             }
 
             return await GetCartAsync(targetCartId);
@@ -74,8 +111,11 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
         public async Task<ShoppingCartDto> UpdateItemQuantityAsync(Guid cartId, int cartItemId, UpdateCartItemQuantityDto dto)
         {
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+
+            // 1. we need to get the cart with its items and related product details to validate the stock
+            // without making extra call to the database for fetching the product variant details because we already have them in the cart items
             var cartSpec = new GetShoppingCartSpec(cartId);
-            var cart = await cartRepository.GetByIdWithSpecAsync(cartSpec); 
+            var cart = await cartRepository.GetByIdWithSpecAsync(cartSpec);
 
             if (cart == null)
                 throw new ShoppingCartNotFoundException("Cart Not Found");
@@ -88,42 +128,56 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             if (dto.Quantity <= 0)
                 throw new BadRequestExceptionCustome("Quantity must be greater than zero");
 
-            await ValidateProductStockAsync(cartItem.ProductVariantId, dto.Quantity);
+            // no call the database to validate the stock because we already have the product variant details in the cart item entity
+            ValidateProductStockInMemory(cartItem, dto.Quantity);
 
+            // 3. update the quantity and save changes
             cartItem.Quantity = dto.Quantity;
             cart.UpdatedAt = DateTime.UtcNow;
             cart.LastModifiedBy = cart.UserId;
+
+            cartRepository.Update(cart); // ensure the cart is tracked for update
 
             await _unitOfWork.SaveChangesAsync();
 
             return await GetCartAsync(cartId);
         }
-      
+
         public async Task<ShoppingCartDto> RemoveItemFromCartAsync(Guid shoppingCartId, int cartItemId)
         {
-            // 1 - check existance 
+            // 1 - check existence 
             var cartRepo = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
+
+            // get the cart with its items to find the item to delete and also to update the cart after deleting the item
+            var cartItemRepo = _unitOfWork.GetRepository<CartItemEntity, int>();
+
             var cartSpec = new GetShoppingCartSpec(shoppingCartId);
             var cart = await cartRepo.GetByIdWithSpecAsync(cartSpec);
 
             if (cart == null) throw new ShoppingCartNotFoundException("Shopping Cart Not Found");
-            
+
             // 2 - find the item in the cart
             var item = cart.CartItems.FirstOrDefault(c => c.Id == cartItemId);
             if (item == null) throw new CartItemNotFound($"Cart Item Not Found");
 
-            // 3 - delete
-            if(item.CustomizedPreviewUrl != null)
+            // 3 - delete image from server
+            if (!string.IsNullOrEmpty(item.CustomizedPreviewUrl))
                 await attachmentService.DeleteImage(item.CustomizedPreviewUrl);
-            
-            cart.CartItems.Remove(item);
+
+            // 2. delete the item from the cart and database
+            cart.CartItems.Remove(item); 
+            cartItemRepo.Delete(item);  
+
             cart.UpdatedAt = DateTime.UtcNow;
             cart.LastModifiedBy = cart.UserId;
 
+            cartRepo.Update(cart);
+
             await _unitOfWork.SaveChangesAsync();
+
             return await GetCartAsync(shoppingCartId);
         }
-       
+
         public async Task<ShoppingCartDto> MergeGuestCartToUserCartAsync(Guid guestCartId, string userId)
         {
             var cartRepository = _unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
@@ -181,16 +235,26 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
         #region Helper in Add item to cart
         private async Task<ProductVariantEntity> ValidateProductStockAsync(int variantId, int requestedQuantity)
         {
-            var productVariantRepository = _unitOfWork.GetRepository<ProductVariantEntity, int>();
-            var variant = await productVariantRepository.GetByIdAsync(variantId);
+            var variantRepo = _unitOfWork.GetRepository<ProductVariantEntity, int>();
+
+            var variant = await variantRepo.GetByIdAsync(variantId);
 
             if (variant == null)
-                throw new NotFoundExceptionCustome("Product Not Available Now");
+                throw new NotFoundExceptionCustome("هذا المنتج غير متاح حالياً في النظام.");
 
             if (variant.StockQuantity < requestedQuantity)
-                throw new BadRequestExceptionCustome($"Quantity : {variant.StockQuantity} Not Available");
+                throw new BadRequestExceptionCustome(
+                    $"الكمية المطلوبة غير متوفرة. المتاح في المخزن حالياً هو ({variant.StockQuantity}) قطعة فقط.");
 
             return variant;
+        }
+        private void ValidateProductStockInMemory(CartItemEntity cartItem, int requestedQuantity)
+        {
+            if (cartItem.ProductVariant == null)
+                throw new NotFoundExceptionCustome("Product Details Not Loaded");
+
+            if (cartItem.ProductVariant.StockQuantity < requestedQuantity)
+                throw new BadRequestExceptionCustome($"Quantity : {cartItem.ProductVariant.StockQuantity} Not Available");
         }
         private async Task HandleExistingCartWithFoundObjectAsync(ShoppingCartEntity cart, AddToCartDto dto, ProductVariantEntity variant, string? userId, string? imageUrl)
         {
@@ -231,7 +295,6 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                 };
 
                 cart.CartItems.Add(newCartItem);
-
                 var cartItemRepository = _unitOfWork.GetRepository<CartItemEntity, int>();
                 await cartItemRepository.AddAsync(newCartItem);
             }

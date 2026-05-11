@@ -95,13 +95,17 @@ namespace E_commerce.Services.Services.ProductImplementation
             var spec = new ProductByIdSpec(id);
             var existingProduct = await productRepo.GetByIdWithSpecAsync(spec);
             if (existingProduct == null)
-                throw new NotFoundExceptionCustome($"product with not found");
+                throw new NotFoundExceptionCustome($"product not found");
 
             // 1 - get productFolder Name 
             var ProductFolderName = GetProductFolderId(existingProduct);
 
-            // 2 - update the data 
-            _mapper.Map(productDto, existingProduct);
+            existingProduct.Name = productDto.Name;
+            existingProduct.Description = productDto.Description;
+            existingProduct.Price = productDto.Price;
+            existingProduct.CategoryId = productDto.CategoryId;
+            existingProduct.TargetGender = productDto.TargetGender;
+            existingProduct.UpdatedAt = DateTime.UtcNow;
 
             // 3 - handel the images of the product 
             await HandleProductImagesUpdateAsync(productDto, existingProduct, ProductFolderName);
@@ -110,11 +114,20 @@ namespace E_commerce.Services.Services.ProductImplementation
             HandleProductVariantsUpdate(productDto, existingProduct);
 
             // 5 - save the changes to the database
+            // 5 - save the changes to the database
             productRepo.Update(existingProduct);
-            var result = await _unitOfWork.SaveChangesAsync();
 
-            if (result <= 0)
-                throw new BadRequestExceptionCustome("Failed to update product");
+            try
+            {
+                var result = await _unitOfWork.SaveChangesAsync();
+                if (result <= 0)
+                    throw new BadRequestExceptionCustome("Failed to update product");
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestExceptionCustome(
+                    "لا يمكن حذف هذا الصنف  لأنه مرتبط بطلبات وفواتير سابقة للعملاء. يمكنك تصفير المخزون المتاح بدلاً من حذفه.");
+            }
 
             return await GetProductDetailsByIdAsync(existingProduct.Id);
         }
@@ -137,65 +150,119 @@ namespace E_commerce.Services.Services.ProductImplementation
             var spec = new ProductByIdSpec(id);
             var existingProduct = await productRepo.GetByIdWithSpecAsync(spec);
 
-            if (existingProduct != null)
+            if (existingProduct == null) return false;
+
+            if (existingProduct.IsBaseGarment)
+                throw new BadRequestExceptionCustome("لا يمكن حذف المنتج الأساسي المخصص للطباعة. يمكنك فقط إدارة أصنافه (Variants).");
+
+            if (existingProduct.Variants != null)
             {
-                if (existingProduct.IsBaseGarment)
-                    throw new BadRequestExceptionCustome("Cannot delete a base customization garment. You can only manage its variants.");
-
-                if (!string.IsNullOrEmpty(existingProduct.MainImageUrl))
-                    await attachmentService.DeleteImage(existingProduct.MainImageUrl);
-
-                if (existingProduct.Images != null && existingProduct.Images.Any())
+                foreach (var variant in existingProduct.Variants)
                 {
-                    foreach (var img in existingProduct.Images)
-                    {
-                        await attachmentService.DeleteImage(img.ImageUrl);
-                    }
+                    // بنصفر الألوان والمقاسات عشان EF Core ميمشيش وراها ويعمل قفلة التتبع
+                    variant.Color = null;
+                    variant.Size = null;
+                    variant.Product = null;
                 }
-                productRepo.Delete(existingProduct);
             }
+
+            productRepo.Delete(existingProduct);
+
+            try
+            {
+                var result = await _unitOfWork.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    if (!string.IsNullOrEmpty(existingProduct.MainImageUrl))
+                        await attachmentService.DeleteImage(existingProduct.MainImageUrl);
+
+                    if (existingProduct.Images != null && existingProduct.Images.Any())
+                    {
+                        foreach (var img in existingProduct.Images)
+                        {
+                            await attachmentService.DeleteImage(img.ImageUrl);
+                        }
+                    }
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception)
+            {
+                throw new BadRequestExceptionCustome(
+                    "لا يمكن حذف هذا المنتج لأنه مرتبط بطلبات وفواتير سابقة للعملاء. يمكنك تعطيله أو تصفير مخزونه بدلاً من حذفه.");
+            }
+        }
+        public async Task<bool> ToggleProductActivityAsync(int id)
+        {
+            var productRepo = _unitOfWork.GetRepository<ProductEntity, int>();
+            var product = await productRepo.GetByIdAsync(id);
+
+            if (product == null) return false;
+
+            product.IsActive = !product.IsActive;
+
+            productRepo.Update(product);
             return await _unitOfWork.SaveChangesAsync() > 0;
         }
-        
         #region Handler Methods
         private void HandleProductVariantsUpdate(ProductToUpdateDto productDto, ProductEntity existingProduct)
         {
+            // ===================================================================
+            // 1. مسح الـ Variants القديمة (مع تنظيف الميموري لمنع إيرور 500)
+            // ===================================================================
             if (productDto.Variants != null)
             {
                 var incomingVariantIds = productDto.Variants.Select(v => v.Id).ToList();
                 var existingVariantIds = existingProduct.Variants.Select(v => v.Id).ToList();
-                // find variants that exist in the database but are not included in the incoming DTO,
-                // indicating they should be deleted
+
                 var variantsToDelete = existingProduct.Variants.Where(ev => !incomingVariantIds.Contains(ev.Id)).ToList();
-                // delete the variants
+
                 var variantRepo = _unitOfWork.GetRepository<ProductVariantEntity, int>();
-                foreach (var variants in variantsToDelete)
-                    variantRepo.Delete(variants); 
+                foreach (var variant in variantsToDelete)
+                {
+                    variant.Color = null;
+                    variant.Size = null;
+                    variant.Product = null;
+
+                    existingProduct.Variants.Remove(variant);
+
+                    variantRepo.Delete(variant);
+                }
             }
-            // update or add variants
-            // product variants mean productColor + productSize + productStock
+
+            // ===================================================================
+            // 2. إضافة أو تحديث الـ Variants
+            // ===================================================================
             if (productDto.Variants != null)
             {
                 foreach (var variantDto in productDto.Variants)
                 {
-                    // if he add from drop menue exist color and exist size but change the stock quantity we will update the variant
                     if (variantDto.Id.HasValue)
                     {
                         var existingVariant = existingProduct.Variants.FirstOrDefault(v => v.Id == variantDto.Id);
                         if (existingVariant != null)
                         {
-                            // Validate if the incoming ColorId/SizeId is > 0 and valid before mapping (Optional but Recommended)
                             if (variantDto.ColorId <= 0 || variantDto.SizeId <= 0)
                                 throw new BadRequestExceptionCustome("Invalid Color ID or Size ID provided for the variant.");
 
                             _mapper.Map(variantDto, existingVariant);
+
+                            existingVariant.Color = null;
+                            existingVariant.Size = null;
+                            existingVariant.Product = null;
                         }
                     }
-                    // if he add blue color in the endpoints of them and then return to product to update his variant to has
-                    // blue color and small size we will add new variant because this variant not exist before for this product
                     else
                     {
                         var newVariant = _mapper.Map<ProductVariantEntity>(variantDto);
+
+                        newVariant.Color = null;
+                        newVariant.Size = null;
+                        newVariant.Product = null;
+
                         existingProduct.Variants.Add(newVariant);
                     }
                 }
