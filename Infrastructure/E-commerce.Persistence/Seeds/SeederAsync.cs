@@ -114,9 +114,9 @@ namespace E_commerce.Persistence.Seeds
             {
                 ("Black", "#000000"),
                 ("White", "#FFFFFF"), 
-                ("Soft Blue", "#739BCB"),
-                ("Dusty Purple", "#9A74A8"),
-                ("Bright Yellow", "#F5D400")
+                ("Baby Blue", "#7bafeb"),
+                ("Purple", "#9A74A8"),
+                ("Bright Yellow", "#fdda0e")
             };
             var existingColors = await colorRepo.GetAllAsync();
 
