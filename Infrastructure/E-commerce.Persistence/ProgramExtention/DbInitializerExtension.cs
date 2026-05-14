@@ -1,0 +1,29 @@
+﻿using E_commerce.Domain.DbInitializer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace E_commerce.Persistence.Extensions
+{
+    public static class DbInitializerExtension
+    {
+        public static async Task SeedDatabaseAsync(this IApplicationBuilder app)
+        {
+            // 🌟 التعديل هنا: استخدمنا await using و CreateAsyncScope()
+            await using (var scope = app.ApplicationServices.CreateAsyncScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var initializer = services.GetRequiredService<IDbInitializer>();
+                    await initializer.DataSeedAsync();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILoggerFactory>().CreateLogger("DbInitializer");
+                    logger.LogError(ex, "An error occurred while seeding roles.");
+                }
+            }
+        }
+    }
+}
