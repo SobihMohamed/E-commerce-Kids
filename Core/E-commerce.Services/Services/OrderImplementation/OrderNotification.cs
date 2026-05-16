@@ -14,14 +14,21 @@ namespace E_commerce.Services.Services.OrderImplementation
         private async Task NotifyOnOrderCreationAsync(OrderEntity order)
         {
             var user = await userManager.FindByIdAsync(order.UserId);
-            if (user == null) return;
+
+            if (user == null)
+            {
+                Console.WriteLine($"❌ User not found: {order.UserId}");
+                return;
+            }
+
+            Console.WriteLine($"📨 Sending email to: {user.Email ?? "NULL"}");
 
             var customerNotification = new NotificationContentDto
             {
                 UserId = order.UserId,
                 Email = user.Email,
                 Subject = "تم استلام طلبك بنجاح! 👕✨",
-                Body = $"شكراً لطلبك من Radiant Studio يا {user.FullName}! جاري الآن تجهيز طلبك رقم {order.OrderNumber} وطباعة التصميمات الكرتونية المخصصة لملابس طفلك. سنتواصل معك قريباً بمجرد الشحن.",
+                Body = $"شكراً لطلبك من Mine Store يا {user.FullName}! جاري الآن تجهيز طلبك رقم {order.OrderNumber} وطباعة التصميمات الكرتونية المخصصة لملابس طفلك. سنتواصل معك قريباً بمجرد الشحن.",
                 ReferenceId = order.Id.ToString(), 
             };
             await notificationService.SendNotificationAsync(customerNotification, NotificationType.Push, NotificationType.Email);
@@ -54,7 +61,7 @@ namespace E_commerce.Services.Services.OrderImplementation
             {
                 OrderStatus.Processing => "تم تأكيد طلبك! جاري الآن تجهيز ملابسك المخصصة للطباعة. ✨",
                 OrderStatus.Shipped => "خبر سعيد! طلبك في الطريق إليك الآن. 🚚",
-                OrderStatus.Delivered => "تم تسليم الطلب. نتمنى أن تنال ملابس Radiant Studio إعجاب طفلك! ❤️",
+                OrderStatus.Delivered => "تم تسليم الطلب. نتمنى أن تنال ملابس Mine Store إعجاب طفلك! ❤️",
                 OrderStatus.Cancelled => "للأسف، تم إلغاء طلبك. يمكنك التواصل معنا لمعرفة السبب.",
                 _ => $"تم تحديث حالة طلبك رقم {order.OrderNumber} إلى {order.OrderStatus}"
             };
