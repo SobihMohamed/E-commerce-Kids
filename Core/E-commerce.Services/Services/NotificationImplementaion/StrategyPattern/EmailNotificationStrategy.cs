@@ -31,7 +31,7 @@ public class EmailNotificationStrategy(
         using var client = new SmtpClient();
         try
         {
-            await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.StartTls);
+            await client.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.Auto);
             await client.AuthenticateAsync(_emailSettings.Email, _emailSettings.Password);
             await client.SendAsync(emailMessage);
         }
