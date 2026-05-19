@@ -6,11 +6,21 @@ using E_commerce.Services.AutoMapper;
 using E_commerce.Web.Extensions;
 using E_commerce.Web.Hubs.Notification;
 using E_commerce.Web.Middleware;
-using Microsoft.AspNetCore.Identity;
-using Scalar.AspNetCore;
+using Serilog;
 using System.Text.Json.Serialization;
 
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.File(
+        "logs/app.txt",
+        rollingInterval: RollingInterval.Day,
+        flushToDiskInterval: TimeSpan.FromSeconds(1) 
+    )
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog();
 
 // =======================================================
 // 1. Add Services to the container (DI Configuration)
@@ -34,7 +44,6 @@ builder.Services.AddCustomCors(builder.Configuration);
 
 // API Documentation (OpenAPI & Scalar)
 builder.Services.AddOpenApiDocumentation();
-
 // Controllers & JSON Options
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -43,7 +52,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 builder.Services.AddSignalR();
-
 
 
 // =======================================================
@@ -93,4 +101,12 @@ app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub");// notification hub endpoint for SignalR
 
 // Run the application
-app.Run();
+// Run the application
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}

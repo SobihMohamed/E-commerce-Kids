@@ -361,3 +361,18 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# تجاهل ملفات الإعدادات الحساسة
+**/appsettings.json
+**/appsettings.Development.json
+
+# 1. تجاهل كل اللي جوه فولدر الـ uploads عشان ميتزحمش بصور التست
+**/wwwroot/uploads/**
+
+# 2. استثناء الفولدرات الأب عشان Git يقدر يوصل للمسار
+!**/wwwroot/uploads/
+!**/wwwroot/uploads/Customization/
+
+# 3. استثناء الصورتين الأساسيين إجبارياً عشان يترفعوا لايف
+!**/wwwroot/uploads/Customization/Boy.png
+!**/wwwroot/uploads/Customization/Girl.png
+!wwwroot/uploads/Customization/Girl.png

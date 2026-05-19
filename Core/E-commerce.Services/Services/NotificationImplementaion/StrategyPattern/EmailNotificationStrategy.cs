@@ -19,10 +19,13 @@ public class EmailNotificationStrategy(
 
     public async Task DeliverAsync(NotificationContentDto ContentDto)
     {
+        logger.LogInformation("📧 DeliverAsync started | To: {Email}", ContentDto.Email ?? "NULL");
+
         if (string.IsNullOrWhiteSpace(ContentDto.Email))
+        {
+            logger.LogWarning("❌ Email is empty, skipping.");
             return;
         }
-
         var emailMessage = new MimeMessage();
         emailMessage.From.Add(new MailboxAddress("Mine Store", _emailSettings.Email));
         emailMessage.To.Add(new MailboxAddress("", ContentDto.Email));
@@ -50,22 +53,22 @@ public class EmailNotificationStrategy(
             logger.LogInformation("🔌 Connecting to SMTP | Host: {Host} | Port: {Port}",
                 _emailSettings.Host, _emailSettings.Port);
 
-            // 👇 2. التعديل هنا: استخدمنا Auto بدل StartTls عشان لو غيرت البورت لـ 465 أو 587 المكتبة تظبط التشفير لوحدها
             await client.ConnectAsync(
                 _emailSettings.Host,
                 _emailSettings.Port,
-                SecureSocketOptions.Auto
+                SecureSocketOptions.StartTls 
             );
-
             logger.LogInformation("🔐 Authenticating | User: {Email}", _emailSettings.Email);
             await client.AuthenticateAsync(_emailSettings.Email, _emailSettings.Password);
+
             await client.SendAsync(emailMessage);
+            logger.LogInformation("✅ Email sent successfully to {Email}", ContentDto.Email);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "⚠️ فشل إرسال البريد الإلكتروني إلى {Email}. السبب: {Message}", ContentDto.Email, ex.Message);
-
-            return;
+            logger.LogError(ex, "⚠️ SMTP Failed | Host: {Host} | Port: {Port} | Error: {Message} | Inner: {Inner}",
+                _emailSettings.Host, _emailSettings.Port, ex.Message, ex.InnerException?.Message ?? "none");
+            throw;
         }
         finally
         {

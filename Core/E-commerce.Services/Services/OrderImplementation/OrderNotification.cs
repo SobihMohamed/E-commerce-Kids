@@ -14,7 +14,14 @@ namespace E_commerce.Services.Services.OrderImplementation
         private async Task NotifyOnOrderCreationAsync(OrderEntity order)
         {
             var user = await userManager.FindByIdAsync(order.UserId);
-            if (user == null) return;
+
+            if (user == null)
+            {
+                Console.WriteLine($"❌ User not found: {order.UserId}");
+                return;
+            }
+
+            Console.WriteLine($"📨 Sending email to: {user.Email ?? "NULL"}");
 
             Console.WriteLine($"📨 Sending email to: {user.Email ?? "NULL"}");
 
@@ -70,9 +77,9 @@ namespace E_commerce.Services.Services.OrderImplementation
             {
                 OrderStatus.Processing => "تم تأكيد طلبك! جاري الآن تجهيز ملابسك المخصصة للطباعة. ✨",
                 OrderStatus.Shipped => "خبر سعيد! طلبك في الطريق إليك الآن. 🚚",
-                OrderStatus.Delivered => "تم تسليم الطلب بنجاح. نتمنى أن تنال المنتجات إعجابك! ❤️",
-                OrderStatus.Cancelled => "للأسف، تم إلغاء طلبك. يمكنك التواصل معنا لمزيد من التفاصيل.",
-                _ => $"تم تحديث حالة الطلب إلى: {order.OrderStatus}"
+                OrderStatus.Delivered => "تم تسليم الطلب. نتمنى أن تنال ملابس Mine Store إعجاب طفلك! ❤️",
+                OrderStatus.Cancelled => "للأسف، تم إلغاء طلبك. يمكنك التواصل معنا لمعرفة السبب.",
+                _ => $"تم تحديث حالة طلبك رقم {order.OrderNumber} إلى {order.OrderStatus}"
             };
 
             var updateBody = $"مرحباً {user.FullName}،\n\n" +
