@@ -111,35 +111,27 @@ namespace E_commerce.Services.Services.OrderImplementation
             var orderRepo = unitOfWork.GetRepository<OrderEntity, Guid>();
             var cartItemRepo = unitOfWork.GetRepository<CartItemEntity, int>();
 
-            // 👇 1. ضفنا الـ Repo الخاص بالمخزون
-            var variantRepo = unitOfWork.GetRepository<ProductVariantEntity, int>();
-
+            // 1. إضافة الأوردر الجديد
             await orderRepo.AddAsync(order);
 
+            // 2. مسح عناصر السلة فقط
             var itemsToDelete = shoppingCart.CartItems.ToList();
             foreach (var item in itemsToDelete)
             {
-                if (item.ProductVariant != null)
-                {
-                    item.ProductVariant.Product = null;
-                    item.ProductVariant.Color = null;
-                    item.ProductVariant.Size = null;
-
-                    variantRepo.Update(item.ProductVariant);
-                }
-
-                item.ProductVariant = null;
-                item.ShoppingCart = null;
-                item.Design = null;
+                // إحنا مش محتاجين نصفر أي Navigation Properties ولا نعمل Update للـ Variant
+                // الـ EF Core عارف إن الـ Stock اتعدل وهيسيفه لوحده
+                // وعارف إننا بنمسح الـ CartItem بس مش بنمسح المنتجات من الداتابيز
 
                 cartItemRepo.Delete(item);
             }
 
+            // 3. حفظ كل التعديلات (إضافة الأوردر + مسح عناصر السلة + تقليل المخزون) في Transaction واحدة
             var res = await unitOfWork.SaveChangesAsync();
 
             if (res <= 0)
                 throw new BadRequestExceptionCustome("Failed to create order");
 
+            // 4. إرجاع الأوردر ببياناته
             var spec = new OrderWithAllDetailsSpec(order.Id);
             var completeOrder = await orderRepo.GetByIdWithSpecAsync(spec);
 
@@ -191,22 +183,27 @@ namespace E_commerce.Services.Services.OrderImplementation
                 throw new BadRequestExceptionCustome("Cannot update status to the same value.");
 
             // if the new status is cancelled, we need to update the stock quantity of the product variants in the order items
-            if (Dto.NewStatus == OrderStatus.Cancelled )
+            if (Dto.NewStatus == OrderStatus.Cancelled)
             {
                 foreach (var item in order.OrderItems)
                 {
                     var variant = await variantRepo.GetByIdAsync(item.ProductVariantId);
                     if (variant != null)
                     {
-                        variant.StockQuantity += item.Quantity; 
-                        variantRepo.Update(variant);
+                        variant.StockQuantity += item.Quantity;
+
+                        // ❌ امسح السطر ده (الـ EF هيتابع التعديل لوحده)
+                        // variantRepo.Update(variant);
                     }
                 }
             }
 
             order.OrderStatus = Dto.NewStatus;
 
-            orderRepo.Update(order);
+            // ❌ امسح السطر ده كمان
+            // orderRepo.Update(order);
+
+            // مجرد ما تنده دي، الـ EF هيشوف إيه اللي اتغير في الـ Stock والـ Status ويعملهم Update أوتوماتيك
             var result = await unitOfWork.SaveChangesAsync();
 
             if (result <= 0)

@@ -77,10 +77,10 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                 existingCartItem.Quantity += dto.Quantity;
                 existingCart.UpdatedAt = DateTime.UtcNow;
                 existingCart.LastModifiedBy = userId;
-                existingCartItem.ProductVariant = null;
+                //existingCartItem.ProductVariant = null;
 
-                var cartItemRepo = _unitOfWork.GetRepository<CartItemEntity, int>();
-                cartItemRepo.Update(existingCartItem);
+                //var cartItemRepo = _unitOfWork.GetRepository<CartItemEntity, int>();
+                //cartItemRepo.Update(existingCartItem);
             }
             else if (existingCart != null && existingCartItem == null)
             {
@@ -136,7 +136,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             cart.UpdatedAt = DateTime.UtcNow;
             cart.LastModifiedBy = cart.UserId;
 
-            cartRepository.Update(cart); // ensure the cart is tracked for update
+            //cartRepository.Update(cart); // ensure the cart is tracked for update
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -171,7 +171,7 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
             cart.UpdatedAt = DateTime.UtcNow;
             cart.LastModifiedBy = cart.UserId;
 
-            cartRepo.Update(cart);
+            //cartRepo.Update(cart);
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -295,8 +295,8 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                 };
 
                 cart.CartItems.Add(newCartItem);
-                var cartItemRepository = _unitOfWork.GetRepository<CartItemEntity, int>();
-                await cartItemRepository.AddAsync(newCartItem);
+                //var cartItemRepository = _unitOfWork.GetRepository<CartItemEntity, int>();
+                //await cartItemRepository.AddAsync(newCartItem);
             }
 
             cart.UpdatedAt = DateTime.UtcNow;
@@ -356,7 +356,8 @@ namespace E_commerce.Services.Services.ShoppingCartImplementation
                     {
                         ProductVariantId = oldUserCartItem.ProductVariantId,
                         Quantity = oldUserCartItem.Quantity,
-                        DesignId = oldUserCartItem.DesignId, 
+                        DesignId = oldUserCartItem.DesignId,
+                        CustomizedPreviewUrl = oldUserCartItem.CustomizedPreviewUrl,
                         CreatedAt = DateTime.UtcNow,
                         LastModifiedBy = userId,
                         CreatedBy = userId
