@@ -20,11 +20,12 @@ namespace E_commerce.Services.Services.AuthImplementation
                 var adminNotification = new NotificationContentDto
                 {
                     UserId = admin.Id,
+                    Email = admin.Email,
                     Subject = "تسجيل عميل جديد 🥳",
                     Body = $"سجل عميل جديد في النظام باسم: '{newUser.FullName}'.",
                     ReferenceId = newUser.Id,
                 };
-                notificationTasks.Add(_notificationService.SendNotificationAsync(adminNotification, NotificationType.Push));
+                notificationTasks.Add(_notificationService.SendNotificationAsync(adminNotification, NotificationType.Push, NotificationType.Email));
             }
 
             await Task.WhenAll(notificationTasks);

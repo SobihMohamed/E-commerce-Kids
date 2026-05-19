@@ -77,7 +77,7 @@ namespace E_commerce.Services.Services.AddressImplementaion
             await MakeOtherAddressesNonDefaultAsync(userId, address.Id);
 
             address.IsDefault = true;
-            addressRepo.Update(address);
+            //addressRepo.Update(address);
 
             await unitOfWork.SaveChangesAsync();
 
@@ -98,7 +98,7 @@ namespace E_commerce.Services.Services.AddressImplementaion
                 await MakeOtherAddressesNonDefaultAsync(userId, address.Id);
             }
 
-            addressRepo.Update(address);
+            //addressRepo.Update(address);
 
             var result = await unitOfWork.SaveChangesAsync();
             if (result <= 0)

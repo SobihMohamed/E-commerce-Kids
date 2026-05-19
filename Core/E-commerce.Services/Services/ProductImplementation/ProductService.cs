@@ -70,8 +70,11 @@ namespace E_commerce.Services.Services.ProductImplementation
 
             // 4- add additional images if provided
             string galleryImagePath = Path.Combine("Products", productFolderId, "Gallary");
-            if (productDto.ImageUrls!=null && productDto.ImageUrls.Count() > 0)
+            if (productDto.ImageUrls != null && productDto.ImageUrls.Any()) // استخدم Any() أفضل وأسرع من Count() > 0
             {
+                // تأمين الليست عشان متضربش Null
+                productEntity.Images ??= new List<ProductImageEntity>();
+
                 foreach (var image in productDto.ImageUrls)
                 {
                     var realGalleryPath = await attachmentService.UploadImageAsync(image, galleryImagePath);
@@ -97,7 +100,6 @@ namespace E_commerce.Services.Services.ProductImplementation
             if (existingProduct == null)
                 throw new NotFoundExceptionCustome($"product not found");
 
-            // 1 - get productFolder Name 
             var ProductFolderName = GetProductFolderId(existingProduct);
 
             existingProduct.Name = productDto.Name;
@@ -107,15 +109,10 @@ namespace E_commerce.Services.Services.ProductImplementation
             existingProduct.TargetGender = productDto.TargetGender;
             existingProduct.UpdatedAt = DateTime.UtcNow;
 
-            // 3 - handel the images of the product 
             await HandleProductImagesUpdateAsync(productDto, existingProduct, ProductFolderName);
-
-            // 4 - handel the variants of the product
             HandleProductVariantsUpdate(productDto, existingProduct);
 
-            // 5 - save the changes to the database
-            // 5 - save the changes to the database
-            productRepo.Update(existingProduct);
+            // ❌ تم مسح productRepo.Update(existingProduct);
 
             try
             {
@@ -125,8 +122,9 @@ namespace E_commerce.Services.Services.ProductImplementation
             }
             catch (Exception ex)
             {
+                // تم تعديل الرسالة لتشمل مشكلة حذف الـ Variants المرتبطة بطلبات
                 throw new BadRequestExceptionCustome(
-                    "لا يمكن حذف هذا الصنف  لأنه مرتبط بطلبات وفواتير سابقة للعملاء. يمكنك تصفير المخزون المتاح بدلاً من حذفه.");
+                    "حدث خطأ أثناء التحديث. إذا كنت تحاول حذف مقاس أو لون (Variant)، فقد يكون مرتبطاً بطلبات سابقة ولا يمكن حذفه. قم بتصفير كميته بدلاً من ذلك.");
             }
 
             return await GetProductDetailsByIdAsync(existingProduct.Id);
@@ -155,16 +153,7 @@ namespace E_commerce.Services.Services.ProductImplementation
             if (existingProduct.IsBaseGarment)
                 throw new BadRequestExceptionCustome("لا يمكن حذف المنتج الأساسي المخصص للطباعة. يمكنك فقط إدارة أصنافه (Variants).");
 
-            if (existingProduct.Variants != null)
-            {
-                foreach (var variant in existingProduct.Variants)
-                {
-                    // بنصفر الألوان والمقاسات عشان EF Core ميمشيش وراها ويعمل قفلة التتبع
-                    variant.Color = null;
-                    variant.Size = null;
-                    variant.Product = null;
-                }
-            }
+            // ❌ مسحنا اللوب بتاع تصفير العلاقات من هنا تماماً
 
             productRepo.Delete(existingProduct);
 
@@ -204,15 +193,12 @@ namespace E_commerce.Services.Services.ProductImplementation
 
             product.IsActive = !product.IsActive;
 
-            productRepo.Update(product);
+            // ❌ مسحنا Update من هنا
             return await _unitOfWork.SaveChangesAsync() > 0;
         }
         #region Handler Methods
         private void HandleProductVariantsUpdate(ProductToUpdateDto productDto, ProductEntity existingProduct)
         {
-            // ===================================================================
-            // 1. مسح الـ Variants القديمة (مع تنظيف الميموري لمنع إيرور 500)
-            // ===================================================================
             if (productDto.Variants != null)
             {
                 var incomingVariantIds = productDto.Variants.Select(v => v.Id).ToList();
@@ -223,19 +209,12 @@ namespace E_commerce.Services.Services.ProductImplementation
                 var variantRepo = _unitOfWork.GetRepository<ProductVariantEntity, int>();
                 foreach (var variant in variantsToDelete)
                 {
-                    variant.Color = null;
-                    variant.Size = null;
-                    variant.Product = null;
-
+                    // ❌ تم مسح تصفير العلاقات من هنا
                     existingProduct.Variants.Remove(variant);
-
                     variantRepo.Delete(variant);
                 }
             }
 
-            // ===================================================================
-            // 2. إضافة أو تحديث الـ Variants
-            // ===================================================================
             if (productDto.Variants != null)
             {
                 foreach (var variantDto in productDto.Variants)
@@ -249,20 +228,13 @@ namespace E_commerce.Services.Services.ProductImplementation
                                 throw new BadRequestExceptionCustome("Invalid Color ID or Size ID provided for the variant.");
 
                             _mapper.Map(variantDto, existingVariant);
-
-                            existingVariant.Color = null;
-                            existingVariant.Size = null;
-                            existingVariant.Product = null;
+                            // ❌ تم مسح تصفير العلاقات من هنا
                         }
                     }
                     else
                     {
                         var newVariant = _mapper.Map<ProductVariantEntity>(variantDto);
-
-                        newVariant.Color = null;
-                        newVariant.Size = null;
-                        newVariant.Product = null;
-
+                        // ❌ تم مسح تصفير العلاقات من هنا
                         existingProduct.Variants.Add(newVariant);
                     }
                 }

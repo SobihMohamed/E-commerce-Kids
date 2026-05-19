@@ -73,9 +73,9 @@ namespace E_commerce.Services.Services.CategoryImplemetation
 
             _mapper.Map(categoryDto, category);
 
-            category.Products = null;
+            //category.Products = null;
 
-            categoryRepo.Update(category);
+            //categoryRepo.Update(category);
             var result = await _unitOfWork.SaveChangesAsync();
 
             if (result <= 0)
