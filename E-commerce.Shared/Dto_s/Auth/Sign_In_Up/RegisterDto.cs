@@ -15,8 +15,7 @@ namespace E_commerce.Shared.Dto_s.Auth.Sign_In_Up
         public string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "Password is required")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
-        ErrorMessage = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.")]
+        [MinLength(4, ErrorMessage = "Password must be at least 4 characters long")]
         public string Password { get; set; } = null!;
 
         [Required, Phone]

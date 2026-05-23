@@ -13,8 +13,7 @@ namespace E_commerce.Shared.Dto_s.Auth.ForgetPssword
         public string Otp { get; set; } = null!;
 
         [Required(ErrorMessage = "Password is required")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
-        ErrorMessage = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.")]
+        [MinLength(4, ErrorMessage = "Password must be at least 4 characters long")]
         public string NewPassword { get; set; } = null!;
         [Required]
         [Compare("NewPassword", ErrorMessage = "Passwords do not match")]
