@@ -4,11 +4,14 @@ using E_commerce.Abstraction.IService.Order;
 using E_commerce.Domain.Contracts.UnitOfWorkPattern;
 using E_commerce.Domain.Exceptions;
 using E_commerce.Domain.Exceptions.NotFoundModels;
+using E_commerce.Domain.Models.Address;
 using E_commerce.Domain.Models.CustomerInteraction;
 using E_commerce.Domain.Models.Order;
 using E_commerce.Domain.Models.Product;
+using E_commerce.Domain.Models.Shipping;
 using E_commerce.Domain.Models.User;
 using E_commerce.Services.Specification.Order;
+using E_commerce.Services.Specification.Shipping;
 using E_commerce.Services.Specification.ShoppingCart;
 using E_commerce.Shared.Common.Pagination;
 using E_commerce.Shared.Common.Params.Order;
@@ -27,20 +30,32 @@ namespace E_commerce.Services.Services.OrderImplementation
         {
             // 1 - check if user has items in cart
             var shoppingCartRepo = unitOfWork.GetRepository<ShoppingCartEntity, Guid>();
-            var shoppingSpec = new GetShoppingCartByUserIdSpec(userId);
-            var shoppingCart = await shoppingCartRepo.GetByIdWithSpecAsync(shoppingSpec);
+            var shoppingCartSpec = new GetShoppingCartByUserIdSpec(userId);
+            var shoppingCart = await shoppingCartRepo.GetByIdWithSpecAsync(shoppingCartSpec);
 
             if (shoppingCart == null || !shoppingCart.CartItems.Any())
                 throw new ShoppingCartNotFoundException("Cart Not Found");
 
             CheckProductVariantAndUpdateStockInMemory(shoppingCart);
 
-            // 3 - convert the cart items to order items
-            var orderItems = ConvertCartItemToOrder(shoppingCart);
+            // 2 - fetch the shipping address to get the city name
+            var addressRepo = unitOfWork.GetRepository<AddressEntity, int>();
+            var shippingAddress = await addressRepo.GetByIdAsync(orderDto.ShippingAddressId);
 
-            // 4 - calculate the order subtotal 
+            if (shippingAddress == null)
+                throw new BadRequestExceptionCustome("عنوان الشحن غير موجود");
+
+            // 3 - fetch the dynamic shipping rate based on the city using Specification
+            var shippingRateRepo = unitOfWork.GetRepository<ShippingRates, int>();
+            var shippingRateSpec = new GetShippingRateByCityNameSpec(shippingAddress.City);
+
+            var shippingRate = await shippingRateRepo.GetByIdWithSpecAsync(shippingRateSpec);
+
+            // 4 - calculate the order subtotal and shipping fee
+            var orderItems = ConvertCartItemToOrder(shoppingCart);
             var subTotal = orderItems.Sum(x => (x.ProductPrice + x.CustomizationPrice) * x.Quantity);
-            var shippingFee = 10m; // for example
+
+            var shippingFee = shippingRate != null ? shippingRate.Price : 85m;
 
             // 5 - create the order entity
             var orderEntity = new OrderEntity
