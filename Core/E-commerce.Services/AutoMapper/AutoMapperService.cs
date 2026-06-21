@@ -8,6 +8,7 @@ using E_commerce.Services.AutoMapper.NotificationMapping;
 using E_commerce.Services.AutoMapper.OrderMapping;
 using E_commerce.Services.AutoMapper.ProductMapping;
 using E_commerce.Services.AutoMapper.ProfileMapping;
+using E_commerce.Services.AutoMapper.ShippingMapping;
 using E_commerce.Services.AutoMapper.ShoppingCartMapping;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -32,6 +33,7 @@ namespace E_commerce.Services.AutoMapper
                 cfg.AddProfile(new LookupProfile());
                 cfg.AddProfile(new DesignProfile());
                 cfg.AddProfile(new NotificationProfile());
+                cfg.AddProfile(new ShippingProfile());
                 cfg.AddProfile(new DashboardProfile());
             });
             return services;
