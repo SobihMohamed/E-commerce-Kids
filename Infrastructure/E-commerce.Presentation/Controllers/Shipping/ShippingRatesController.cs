@@ -5,8 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace E_commerce.Presentation.Controllers.Shipping
 {
-    [Authorize(Roles = "Admin")]
-    [Route("api/admin/shipping-rates")] 
+    [Route("api/shipping-rates")]
     public class ShippingRatesController : AppBaseController
     {
         private readonly IShippingRateService _shippingRateService;
@@ -24,6 +23,7 @@ namespace E_commerce.Presentation.Controllers.Shipping
             return Success(rates, "تم استرجاع أسعار الشحن بنجاح");
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult<ShippingRateDto>> UpdateRate(int id, [FromBody] UpdateShippingRateDto dto)
         {
