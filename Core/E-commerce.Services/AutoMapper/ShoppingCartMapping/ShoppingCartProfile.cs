@@ -50,10 +50,10 @@ namespace E_commerce.Services.AutoMapper.ShoppingCartMapping
 
                 // return the design image url if the design is not null otherwise return empty string
                 .ForMember(dest => dest.DesignImageUrl, opt => opt.MapFrom<PictureUrlResolver<CartItemEntity, CartItemDto>, string>
-                    (src => src.Design != null ? src.Design.ImageUrl : string.Empty))
+                    (src => src.Design != null ? src.Design.ImageUrl : string.Empty));
 
                 // calculate the design price based on whether the design is null or not (if the design is null then the price is 0 otherwise the price is 15)
-                .ForMember(dest => dest.DesignPrice, opt => opt.MapFrom(src => src.DesignId.HasValue ? 50m : 0m));
+                //.ForMember(dest => dest.DesignPrice, opt => opt.MapFrom(src => src.DesignId.HasValue ? 50m : 0m));
         }
     }
 }

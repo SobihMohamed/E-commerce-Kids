@@ -13,13 +13,18 @@ namespace E_commerce.Shared.Dto_s.Order
         public string ColorName { get; set; } = string.Empty;
         public string SizeName { get; set; } = string.Empty;
         public string? CustomizedPreviewUrl { get; set; }
+
         // ==========================================
         //  NEW: Customization Details
         // ==========================================
         public int? DesignId { get; set; }
         public string? DesignName { get; set; }
-        public decimal CustomizationPrice { get; set; }
         public string? CustomizedDesignUrl { get; set; }
-        public decimal TotalItemPrice => (ProductPrice + CustomizationPrice) * Quantity;
+
+        // ❌ تم مسح الـ CustomizationPrice من هنا نهائياً
+        // public decimal CustomizationPrice { get; set; }
+
+        // 🌟 UPDATED: تم تعديل المعادلة عشان تحسب سعر المنتج فقط في الكمية
+        public decimal TotalItemPrice => ProductPrice * Quantity;
     }
 }
