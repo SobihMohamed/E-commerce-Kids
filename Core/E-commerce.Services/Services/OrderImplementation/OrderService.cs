@@ -51,11 +51,15 @@ namespace E_commerce.Services.Services.OrderImplementation
 
             var shippingRate = await shippingRateRepo.GetByIdWithSpecAsync(shippingRateSpec);
 
+            if (shippingRate == null)
+                throw new BadRequestExceptionCustome($"لا يمكن حساب مصاريف الشحن للمحافظة: {shippingAddress.City}. يرجى مراجعة الاسم.");
+
+            var shippingFee = shippingRate.Price;
+
             // 4 - calculate the order subtotal and shipping fee
             var orderItems = ConvertCartItemToOrder(shoppingCart);
+            // customization price = 0 
             var subTotal = orderItems.Sum(x => (x.ProductPrice + x.CustomizationPrice) * x.Quantity);
-
-            var shippingFee = shippingRate != null ? shippingRate.Price : 85m;
 
             // 5 - create the order entity
             var orderEntity = new OrderEntity
@@ -65,7 +69,7 @@ namespace E_commerce.Services.Services.OrderImplementation
                 ShippingAddressId = orderDto.ShippingAddressId,
                 SubTotal = subTotal,
                 ShippingFee = shippingFee,
-                TotalAmount = subTotal + shippingFee,
+                TotalAmount = subTotal + shippingFee, 
                 OrderStatus = OrderStatus.Pending,
                 OrderItems = orderItems
             };
@@ -107,7 +111,6 @@ namespace E_commerce.Services.Services.OrderImplementation
                     Quantity = item.Quantity,
                     ColorName = item.ProductVariant.Color?.Name ?? "N/A",
                     SizeName = item.ProductVariant.Size?.Name ?? "N/A",
-                    // if no customized preview url, use the main image of the product as a fallback
                     CustomizedPreviewUrl = !string.IsNullOrEmpty(item.CustomizedPreviewUrl)
                         ? item.CustomizedPreviewUrl
                         : item.ProductVariant.Product.MainImageUrl,
@@ -115,7 +118,8 @@ namespace E_commerce.Services.Services.OrderImplementation
                     DesignId = item.DesignId,
                     DesignName = item.Design?.Name,
                     CustomizedDesignUrl = item.Design?.ImageUrl,
-                    CustomizationPrice = item.DesignId.HasValue ? 15.0m : 0m
+
+                    CustomizationPrice = 0m
                 });
             }
             return orderItems;
@@ -206,19 +210,12 @@ namespace E_commerce.Services.Services.OrderImplementation
                     if (variant != null)
                     {
                         variant.StockQuantity += item.Quantity;
-
-                        // ❌ امسح السطر ده (الـ EF هيتابع التعديل لوحده)
-                        // variantRepo.Update(variant);
                     }
                 }
             }
 
             order.OrderStatus = Dto.NewStatus;
 
-            // ❌ امسح السطر ده كمان
-            // orderRepo.Update(order);
-
-            // مجرد ما تنده دي، الـ EF هيشوف إيه اللي اتغير في الـ Stock والـ Status ويعملهم Update أوتوماتيك
             var result = await unitOfWork.SaveChangesAsync();
 
             if (result <= 0)
