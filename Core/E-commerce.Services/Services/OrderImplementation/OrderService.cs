@@ -46,20 +46,22 @@ namespace E_commerce.Services.Services.OrderImplementation
                 throw new BadRequestExceptionCustome("عنوان الشحن غير موجود");
 
             // 3 - fetch the dynamic shipping rate based on the city using Specification
+            // 3 - fetch the dynamic shipping rate
             var shippingRateRepo = unitOfWork.GetRepository<ShippingRates, int>();
             var shippingRateSpec = new GetShippingRateByCityNameSpec(shippingAddress.City);
-
             var shippingRate = await shippingRateRepo.GetByIdWithSpecAsync(shippingRateSpec);
 
             if (shippingRate == null)
                 throw new BadRequestExceptionCustome($"لا يمكن حساب مصاريف الشحن للمحافظة: {shippingAddress.City}. يرجى مراجعة الاسم.");
 
-            var shippingFee = shippingRate.Price;
-
             // 4 - calculate the order subtotal and shipping fee
             var orderItems = ConvertCartItemToOrder(shoppingCart);
-            // customization price = 0 
             var subTotal = orderItems.Sum(x => (x.ProductPrice + x.CustomizationPrice) * x.Quantity);
+
+            var totalItemsQuantity = orderItems.Sum(x => x.Quantity);
+
+            // discount shipping fee if total items quantity is 2 or more
+            var shippingFee = totalItemsQuantity >= 2 ? 0m : shippingRate.Price;
 
             // 5 - create the order entity
             var orderEntity = new OrderEntity
@@ -68,8 +70,8 @@ namespace E_commerce.Services.Services.OrderImplementation
                 UserId = userId,
                 ShippingAddressId = orderDto.ShippingAddressId,
                 SubTotal = subTotal,
-                ShippingFee = shippingFee,
-                TotalAmount = subTotal + shippingFee, 
+                ShippingFee = shippingFee, 
+                TotalAmount = subTotal + shippingFee,
                 OrderStatus = OrderStatus.Pending,
                 OrderItems = orderItems
             };
